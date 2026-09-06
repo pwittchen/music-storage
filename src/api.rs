@@ -114,8 +114,32 @@ pub async fn stream_track(
     Path(id): Path<String>,
     request: Request,
 ) -> Result<Response, ApiError> {
+    serve_file(&store, &id, request, Disposition::Inline).await
+}
+
+/// The same bytes as `stream_track`, but offered to the browser as a file to save
+/// under the original filename.
+pub async fn download_track(
+    State(store): State<AppState>,
+    Path(id): Path<String>,
+    request: Request,
+) -> Result<Response, ApiError> {
+    serve_file(&store, &id, request, Disposition::Attachment).await
+}
+
+enum Disposition {
+    Inline,
+    Attachment,
+}
+
+async fn serve_file(
+    store: &Store,
+    id: &str,
+    request: Request,
+    disposition: Disposition,
+) -> Result<Response, ApiError> {
     let track = store
-        .get(&id)
+        .get(id)
         .await
         .ok_or_else(|| ApiError::not_found("track not found"))?;
 
@@ -130,15 +154,50 @@ pub async fn stream_track(
     if let Ok(value) = HeaderValue::from_str(&track.content_type) {
         headers.insert(header::CONTENT_TYPE, value);
     }
-    headers.insert(
-        header::CONTENT_DISPOSITION,
-        HeaderValue::from_static("inline"),
-    );
+    let disposition = match disposition {
+        Disposition::Inline => "inline".to_string(),
+        Disposition::Attachment => attachment_disposition(&track.filename),
+    };
+    if let Ok(value) = HeaderValue::from_str(&disposition) {
+        headers.insert(header::CONTENT_DISPOSITION, value);
+    }
     headers.insert(
         header::X_CONTENT_TYPE_OPTIONS,
         HeaderValue::from_static("nosniff"),
     );
     Ok(response)
+}
+
+/// `Content-Disposition` for a download: a plain ASCII `filename` every client
+/// understands, plus the RFC 5987 `filename*` form that keeps non-ASCII names intact.
+fn attachment_disposition(filename: &str) -> String {
+    let ascii: String = filename
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || " ()-._~".contains(c) {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    let ascii = if ascii.trim().is_empty() {
+        "track".to_string()
+    } else {
+        ascii
+    };
+
+    let mut encoded = String::new();
+    for byte in filename.as_bytes() {
+        match *byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b'~' => {
+                encoded.push(*byte as char)
+            }
+            _ => encoded.push_str(&format!("%{byte:02X}")),
+        }
+    }
+
+    format!("attachment; filename=\"{ascii}\"; filename*=UTF-8''{encoded}")
 }
 
 // --- mutating endpoints -----------------------------------------------------

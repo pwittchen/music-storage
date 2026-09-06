@@ -3,6 +3,7 @@
 import {
   ICONS,
   deleteTrack,
+  downloadUrl,
   el,
   formatDate,
   formatSize,
@@ -216,6 +217,15 @@ function buildPlayer() {
 
 // --- page -------------------------------------------------------------------
 
+/** An action below the player: an icon followed by its label. */
+function action(icon, label, tag = "button", props = {}) {
+  const node = el(tag, { innerHTML: ICONS[icon], ...props });
+  if (tag === "button") node.type = "button";
+  else node.classList.add("btn");
+  node.append(el("span", { textContent: label }));
+  return node;
+}
+
 function render() {
   if (!track) {
     detail.replaceChildren(
@@ -241,15 +251,26 @@ function render() {
     el("dd", { textContent: value }),
   ]);
 
-  const actions = el("div", { className: "detail-actions" });
+  const actions = el(
+    "div",
+    { className: "detail-actions" },
+    action("back", t("back"), "a", { href: "/" }),
+  );
+
+  // `download` names the saved file; the server sends the same name in its header.
+  actions.append(
+    action("download", t("download"), "a", {
+      href: downloadUrl(track.id),
+      download: track.filename,
+    }),
+  );
 
   // Deleting needs a stored token, so the action only appears once there is one.
   if (getToken()) {
-    const remove = el("button", { type: "button", className: "danger", textContent: t("delete") });
+    const remove = action("trash", t("delete"), "button", { className: "danger" });
     remove.addEventListener("click", () => confirmDelete(actions));
     actions.append(remove);
   }
-  actions.append(el("a", { className: "btn", href: "/", textContent: t("back") }));
 
   detail.replaceChildren(el("h1", { textContent: track.title }), el("dl", {}, ...fields), player, actions);
   resizeWaveform();

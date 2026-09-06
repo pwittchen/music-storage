@@ -148,6 +148,10 @@ The audio bytes. Serves `Content-Type` from the stored metadata and supports HTT
 range requests (`Accept-Ranges: bytes`) so seeking works in the `<audio>` element.
 `404` if unknown.
 
+#### `GET /api/tracks/{id}/download`
+The same bytes, but with `Content-Disposition: attachment` naming the original
+filename, so the browser saves the file instead of playing it. `404` if unknown.
+
 ### Protected (auth token required)
 
 #### `POST /api/tracks`
@@ -212,6 +216,7 @@ turns an unchanged file into a `304`.
   - **Play / Pause** — toggles a single shared `<audio>` element; starting a new
     track stops the previous one; the active row is visually highlighted.
   - **Open** — navigates to the track page.
+  - **Download** — saves the file under its original filename.
   - **Delete** — asks for confirmation in-page (not a native `confirm()` dialog),
     then calls the API and removes the row.
 - **Search**: filters as you type, debounced ~200 ms, by calling
@@ -223,6 +228,7 @@ turns an unchanged file into a `304`.
 
 - Title as the heading, filename, MIME type, size and upload date below it.
 - A single audio player with play/pause and a seek bar.
+- A "Download" link saving the file under its original filename.
 - A "Delete" button (uses the stored token).
 - A "Back" link to the main page.
 - Unknown id → a plain "Track not found" message with a back link.
@@ -306,8 +312,9 @@ Modest but not naive, given this is meant to be self-hosted:
   where the extension is taken from the allow-list, not from the raw input.
 - The original filename is sanitized before being stored in the CSV (strip path
   separators, control characters and NUL; truncate to 255 characters).
-- Downloads are served with `Content-Disposition: inline` and
-  `X-Content-Type-Options: nosniff`.
+- The audio bytes are served with `X-Content-Type-Options: nosniff` and
+  `Content-Disposition: inline` — `attachment` on the download endpoint, where the
+  stored filename is escaped to ASCII and repeated as an RFC 5987 `filename*`.
 - The token is compared in constant time and is never logged.
 - Read endpoints are public by design — anyone who can reach the server can list and
   play everything. Put it behind a reverse proxy or a VPN if that is not acceptable.

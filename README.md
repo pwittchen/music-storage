@@ -8,16 +8,6 @@ No database, no build step, no frontend framework, no user accounts — a single
 binary plus the `static/` directory. Metadata lives in one CSV file, audio files sit
 next to it on disk. See [SPEC.md](SPEC.md) for the full specification.
 
-## Screenshots
-
-The track list, with the player bar at the bottom of the page:
-
-![Track list](screenshot-all.png)
-
-A single track, with the waveform that doubles as the seek bar:
-
-![Single track](screenshot-single.png)
-
 ## Running
 
 ```sh
@@ -136,6 +126,7 @@ Read endpoints are public; mutating ones need `Authorization: Bearer <token>`.
 | `GET` | `/api/tracks?q=…` | no | All tracks, newest first; `q` filters by title and filename |
 | `GET` | `/api/tracks/{id}` | no | One track's metadata |
 | `GET` | `/api/tracks/{id}/stream` | no | The audio bytes, with range-request support |
+| `GET` | `/api/tracks/{id}/download` | no | The same bytes, as a file to save under the original filename |
 | `POST` | `/api/tracks` | yes | `multipart/form-data` with `file` and optional `title` |
 | `DELETE` | `/api/tracks/{id}` | yes | Removes the metadata row and the file |
 
@@ -173,8 +164,9 @@ everything. Put it behind a reverse proxy, HTTP basic auth or a VPN if that is n
 acceptable. There is no HTTPS termination here — terminate TLS in the proxy.
 
 Uploaded filenames are sanitized and never used as paths, the token is compared in
-constant time and never logged, and streams are served with
-`Content-Disposition: inline` and `X-Content-Type-Options: nosniff`.
+constant time and never logged, and the audio bytes are served with
+`X-Content-Type-Options: nosniff` and `Content-Disposition: inline` (`attachment` on
+the download endpoint).
 
 ## License
 

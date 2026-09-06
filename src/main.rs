@@ -109,7 +109,8 @@ fn build_router(store: Arc<Store>, token: Arc<String>, max_upload_bytes: usize) 
     let api_routes = Router::new()
         .route("/tracks", tracks)
         .route("/tracks/{id}", track)
-        .route("/tracks/{id}/stream", get(api::stream_track));
+        .route("/tracks/{id}/stream", get(api::stream_track))
+        .route("/tracks/{id}/download", get(api::download_track));
 
     // There is no build step, so the static files keep their names across edits. Without a
     // `Cache-Control` header browsers are free to guess a freshness lifetime from the file's

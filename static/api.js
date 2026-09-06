@@ -8,6 +8,9 @@ export const ICONS = {
   pause: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5h3.2v11H4zM8.8 2.5H12v11H8.8z"/></svg>',
   open: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9 2h5v5h-1.5V4.56L7.3 9.76 6.24 8.7l5.2-5.2H9V2zM2.5 4H7v1.5H4v6.5h6.5V9H12v4.5H2.5V4z"/></svg>',
   trash: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 1.5h3l.5 1H13V4H3V2.5h3l.5-1zM4 5.5h8l-.6 8.2a1 1 0 0 1-1 .8H5.6a1 1 0 0 1-1-.8L4 5.5z"/></svg>',
+  download:
+    '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.25 1.5h1.5v6.19l2.22-2.22 1.06 1.06L8 11.56 3.97 6.53l1.06-1.06 2.22 2.22V1.5zM2.5 12h11v1.5h-11z"/></svg>',
+  back: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.47 2.47l1.06 1.06L4.81 7.25H13.5v1.5H4.81l3.72 3.72-1.06 1.06L1.94 8l5.53-5.53z"/></svg>',
   plus: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.25 2.5h1.5v4.75H13.5v1.5H8.75V13.5h-1.5V8.75H2.5v-1.5h4.75V2.5z"/></svg>',
   minus: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 7.25h11v1.5h-11z"/></svg>',
 };
@@ -68,6 +71,11 @@ export function getTrack(id) {
 
 export function streamUrl(id) {
   return `/api/tracks/${encodeURIComponent(id)}/stream`;
+}
+
+/** The same bytes as `streamUrl`, served with `Content-Disposition: attachment`. */
+export function downloadUrl(id) {
+  return `/api/tracks/${encodeURIComponent(id)}/download`;
 }
 
 export function uploadTrack({ file, title, token }) {

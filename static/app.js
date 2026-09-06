@@ -3,6 +3,7 @@
 import {
   ICONS,
   deleteTrack,
+  downloadUrl,
   el,
   formatDate,
   formatSize,
@@ -121,7 +122,13 @@ function renderRow(track) {
     href: `/track.html?id=${encodeURIComponent(track.id)}`,
   });
 
-  const actions = el("div", { className: "row-actions" }, play, open);
+  // `download` names the saved file; the server sends the same name in its header.
+  const save = action("download", t("download"), "a", {
+    href: downloadUrl(track.id),
+    download: track.filename,
+  });
+
+  const actions = el("div", { className: "row-actions" }, play, open, save);
 
   // Deleting needs a stored token, so the action only appears once there is one.
   if (getToken()) {
