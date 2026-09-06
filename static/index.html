@@ -6,6 +6,15 @@
     <title>plainsong</title>
     <link rel="stylesheet" href="/style.css" />
     <link rel="icon" href="data:," />
+    <script>
+      // Applied before the first paint so a remembered light theme does not flash
+      // dark; the switch itself lives in theme.js, which reads the same key.
+      try {
+        if (localStorage.getItem("plainsong-theme") === "light") {
+          document.documentElement.dataset.theme = "light";
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <div class="wrap">
@@ -26,6 +35,7 @@
             aria-controls="upload-form token-form"
             aria-expanded="false"
           ></button>
+          <button type="button" class="theme" id="theme"></button>
           <div class="lang" id="lang" role="group" aria-label="Language / Język">
             <button type="button" data-lang="en">EN</button>
             <button type="button" data-lang="pl">PL</button>

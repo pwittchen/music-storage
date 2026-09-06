@@ -1,20 +1,41 @@
+/* Dark is the default theme; `data-theme="light"` on <html> swaps the palette.
+   Only the colours change — everything below is written against these tokens. */
 :root {
   --bg: #08090a;
   --surface: #0f1011;
   --surface-hover: #17181a;
   --border: #1f2023;
+  --border-hover: #2a2c30;
   --text: #e6e6e6;
   --text-muted: #8a8f98;
   --accent: #1db954;
   --accent-hover: #1ed760;
+  --on-accent: #04140a;
   --danger: #e5484d;
   --waveform: #2f3237;
   --radius: 6px;
   --transition: 120ms ease;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f7f8f9;
+  --surface: #ffffff;
+  --surface-hover: #f1f3f5;
+  --border: #dfe2e6;
+  --border-hover: #c9ced4;
+  --text: #14171a;
+  --text-muted: #5c6570;
+  /* darker than the dark theme's green so it still reads as text on white */
+  --accent: #0f7038;
+  --accent-hover: #0b5c2d;
+  --on-accent: #ffffff;
+  --danger: #c62828;
+  --waveform: #ccd2d9;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }
-html { color-scheme: dark; }
 
 body {
   margin: 0;
@@ -63,8 +84,14 @@ header {
   letter-spacing: 0.04em;
 }
 
-.lang button[aria-pressed="true"] { background: var(--accent); color: #04140a; }
-.lang button[aria-pressed="true"]:hover { background: var(--accent-hover); color: #04140a; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.lang button[aria-pressed="true"]:hover { background: var(--accent-hover); color: var(--on-accent); }
+
+/* theme switch: one button showing the theme it switches to */
+
+.theme { flex: none; padding: 6px 8px; color: var(--text-muted); }
+.theme:hover:not(:disabled) { color: var(--text); }
+.theme svg { width: 15px; height: 15px; }
 
 /* forms */
 
@@ -80,7 +107,7 @@ input {
 }
 
 input::placeholder { color: var(--text-muted); }
-input:hover { border-color: #2a2c30; }
+input:hover { border-color: var(--border-hover); }
 input:focus-visible,
 button:focus-visible,
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -117,7 +144,7 @@ button,
 button:hover:not(:disabled),
 .btn:hover { background: var(--surface-hover); color: var(--text); }
 button:disabled { opacity: 0.5; cursor: default; }
-button.primary { border-color: transparent; background: var(--accent); color: #04140a; font-weight: 600; }
+button.primary { border-color: transparent; background: var(--accent); color: var(--on-accent); font-weight: 600; }
 button.primary:hover:not(:disabled) { background: var(--accent-hover); }
 button.danger:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
 button.icon, .btn.icon { padding: 6px 10px; }
@@ -259,7 +286,7 @@ audio { display: none; } /* both pages drive playback from their own controls */
   border-color: transparent;
   border-radius: 50%;
   background: var(--accent);
-  color: #04140a;
+  color: var(--on-accent);
 }
 
 .player-play:hover:not(:disabled) { background: var(--accent-hover); }

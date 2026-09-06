@@ -32,6 +32,10 @@ The interface is available in English and Polish (`EN` / `PL` in the header). Th
 is remembered in `localStorage`; without one, the browser's language decides. Server-side
 messages are English, but the interface translates the common API errors by status code.
 
+There are a dark and a light theme. Dark is the default; the icon button next to the
+language switch flips to the other one — it shows the theme it switches to — and the
+choice is remembered in `localStorage` too.
+
 The server must be started from a directory containing `static/`; that is the repository
 root when you use `cargo run`. Those files are served with `Cache-Control: no-cache`, so
 an edited page, script or stylesheet shows up on an ordinary reload — no hard reload

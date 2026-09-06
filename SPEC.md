@@ -204,7 +204,8 @@ turns an unchanged file into a `304`.
 
 ### 6.1 Main page — `/` (`index.html`)
 
-- **Header**: app name on the left, a search input on the right.
+- **Header**: app name on the left; on the right a search input, the upload toggle,
+  the theme switch and the `EN` / `PL` language switch.
 - **Upload area**: file picker, optional title input, "Upload" button. The upload uses
   the remembered token; without one it refuses and points at the token form.
 - **Token area**: a separate form below the upload one — token input, "Remember token"
@@ -235,23 +236,38 @@ turns an unchanged file into a `304`.
 
 ### 6.3 Visual design
 
-Minimalistic and linear-inspired: dark, calm, high information density, restrained
-borders, no shadows or gradients beyond a subtle hover state. Spotify-like green as
-the single accent colour, used for the active/primary affordances only — the play
-button, the currently playing row, focus rings, the upload button and the line saying a
-token is remembered. Everything else stays neutral greys.
+Minimalistic and linear-inspired: calm, high information density, restrained borders,
+no shadows or gradients beyond a subtle hover state. Spotify-like green as the single
+accent colour, used for the active/primary affordances only — the play button, the
+currently playing row, focus rings, the upload button and the line saying a token is
+remembered. Everything else stays neutral greys.
 
-| Token | Value | Used for |
-| --- | --- | --- |
-| `--bg` | `#08090a` | Page background |
-| `--surface` | `#0f1011` | Cards, rows, input backgrounds |
-| `--surface-hover` | `#17181a` | Row hover |
-| `--border` | `#1f2023` | Hairline borders and separators |
-| `--text` | `#e6e6e6` | Primary text |
-| `--text-muted` | `#8a8f98` | Secondary text, metadata |
-| `--accent` | `#1db954` | Primary actions, active track |
-| `--accent-hover` | `#1ed760` | Accent hover |
-| `--danger` | `#e5484d` | Delete |
+Two themes, dark by default. A single icon button in the header switches to the other
+one (it shows the theme it switches to) and the choice is remembered in `localStorage`;
+the OS preference is not consulted. The stored theme is applied by a short inline script
+in each page's `<head>`, so a light theme does not flash dark before the modules load.
+Both themes are the same layout with a different palette: every rule is written against
+the tokens below, which `:root` defines for dark and `:root[data-theme="light"]`
+overrides for light. The canvas waveform cannot inherit CSS, so `track.js` reads
+`--accent` and `--waveform` out of the computed style and repaints on a theme change.
+
+| Token | Dark | Light | Used for |
+| --- | --- | --- | --- |
+| `--bg` | `#08090a` | `#f7f8f9` | Page background |
+| `--surface` | `#0f1011` | `#ffffff` | Cards, rows, input backgrounds |
+| `--surface-hover` | `#17181a` | `#f1f3f5` | Row hover |
+| `--border` | `#1f2023` | `#dfe2e6` | Hairline borders and separators |
+| `--border-hover` | `#2a2c30` | `#c9ced4` | Input hover |
+| `--text` | `#e6e6e6` | `#14171a` | Primary text |
+| `--text-muted` | `#8a8f98` | `#5c6570` | Secondary text, metadata |
+| `--accent` | `#1db954` | `#0f7038` | Primary actions, active track |
+| `--accent-hover` | `#1ed760` | `#0b5c2d` | Accent hover |
+| `--on-accent` | `#04140a` | `#ffffff` | Text on an accent-filled button |
+| `--danger` | `#e5484d` | `#c62828` | Delete |
+| `--waveform` | `#2f3237` | `#ccd2d9` | Unplayed waveform bars |
+
+The light accent and danger colours are darker than their dark-theme counterparts so
+that they still clear the contrast threshold as text on white.
 
 Typography: the system UI font stack, 14 px base, 13 px for metadata.
 Layout: single centred column, `max-width: 880px`, responsive down to a phone width
@@ -295,6 +311,8 @@ plainsong/
     app.js         # main page logic
     track.js       # track page logic
     api.js         # tiny fetch wrapper shared by both pages
+    i18n.js        # UI strings and the language switch
+    theme.js       # the dark/light switch
     style.css
   data/            # created at runtime, git-ignored
 ```
@@ -348,4 +366,4 @@ The project is done when all of the following hold:
 
 Listed only so they are not accidentally built now: ID3 tag reading for automatic
 titles, editing a title after upload, sorting options, duration display, drag-and-drop
-upload, dark/light theme toggle.
+upload.

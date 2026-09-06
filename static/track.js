@@ -13,6 +13,7 @@ import {
   streamUrl,
 } from "./api.js";
 import { apiErrorMessage, applyStaticText, mountLanguageSwitch, t } from "./i18n.js";
+import { mountThemeSwitch, renderThemeButton } from "./theme.js";
 
 const detail = document.getElementById("detail");
 const notice = document.getElementById("notice");
@@ -31,13 +32,17 @@ function showNotice(message) {
 // --- waveform ---------------------------------------------------------------
 
 const BAR_COUNT = 180;
-const COLORS = (() => {
+
+/** The canvas cannot inherit CSS colours, so the palette is read out and cached. */
+function readColors() {
   const styles = getComputedStyle(document.documentElement);
   return {
     played: styles.getPropertyValue("--accent").trim(),
     rest: styles.getPropertyValue("--waveform").trim(),
   };
-})();
+}
+
+let colors = readColors();
 
 // Built once and reused across re-renders, so switching language does not restart
 // playback or throw away the decoded peaks.
@@ -97,7 +102,7 @@ function drawWaveform() {
     // A flat quiet line stands in until the peaks are decoded.
     const level = peaks ? peaks[i] : 0.08;
     const barHeight = Math.max(2, level * (height - 8));
-    context.fillStyle = (i + 1) / BAR_COUNT <= progress ? COLORS.played : COLORS.rest;
+    context.fillStyle = (i + 1) / BAR_COUNT <= progress ? colors.played : colors.rest;
     context.fillRect(i * slot, (height - barHeight) / 2, barWidth, barHeight);
   }
 
@@ -305,9 +310,18 @@ function confirmDelete(actions) {
 
 applyStaticText(); // the header is translated before the metadata request resolves
 
+// The waveform is painted on a canvas, so it has to be repainted in the new palette.
+mountThemeSwitch(() => {
+  colors = readColors();
+  drawWaveform(); // a no-op until the player exists
+});
+
 try {
   track = await getTrack(id);
 } catch {
   track = null;
 }
-mountLanguageSwitch(render); // also applies the static text on first load
+mountLanguageSwitch(() => {
+  renderThemeButton();
+  render();
+}); // also applies the static text on first load

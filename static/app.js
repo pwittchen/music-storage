@@ -15,6 +15,7 @@ import {
   uploadTrack,
 } from "./api.js";
 import { apiErrorMessage, mountLanguageSwitch, t } from "./i18n.js";
+import { mountThemeSwitch, renderThemeButton } from "./theme.js";
 
 const $ = (id) => document.getElementById(id);
 const [search, notice, listContainer, player, form] = [
@@ -319,8 +320,10 @@ forgetButton.addEventListener("click", () => {
 // --- start -----------------------------------------------------------------
 
 tokenInput.value = getToken();
+mountThemeSwitch(); // the page draws nothing in theme colours itself; the CSS does it all
 mountLanguageSwitch(() => {
   renderPanel(); // the toggle's label is built in JS, so it needs re-translating too
+  renderThemeButton();
   renderToken();
   render();
 });
