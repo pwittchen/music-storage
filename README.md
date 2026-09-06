@@ -1,4 +1,4 @@
-# music-storage
+# plainsong
 
 [![CI](https://github.com/pwittchen/music-storage/actions/workflows/ci.yml/badge.svg)](https://github.com/pwittchen/music-storage/actions/workflows/ci.yml)
 
