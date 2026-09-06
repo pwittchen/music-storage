@@ -23,7 +23,7 @@
             type="button"
             class="icon"
             id="toggle-upload"
-            aria-controls="upload-form"
+            aria-controls="upload-form token-form"
             aria-expanded="false"
           ></button>
           <div class="lang" id="lang" role="group" aria-label="Language / Język">
@@ -42,6 +42,10 @@
           data-i18n-label="fileLabel"
         />
         <input id="title" type="text" data-i18n-placeholder="titlePlaceholder" data-i18n-label="titleLabel" />
+        <button class="primary" type="submit" id="upload-button" data-i18n="upload"></button>
+      </form>
+
+      <form class="token-form" id="token-form" hidden>
         <input
           id="token"
           type="password"
@@ -49,12 +53,12 @@
           data-i18n-placeholder="tokenPlaceholder"
           data-i18n-label="tokenLabel"
         />
-        <button class="primary" type="submit" id="upload-button" data-i18n="upload"></button>
-        <div class="token-row">
-          <span data-i18n="tokenHint"></span>
-          <button type="button" class="linkish" id="forget-token" data-i18n="forgetToken"></button>
-        </div>
+        <button type="submit" id="remember-token" data-i18n="rememberToken"></button>
+        <button type="button" class="linkish" id="forget-token" data-i18n="forgetToken"></button>
+        <p class="token-hint" data-i18n="tokenHint"></p>
       </form>
+
+      <p class="token-status" id="token-status"></p>
 
       <p class="notice" id="notice" hidden role="status"></p>
 

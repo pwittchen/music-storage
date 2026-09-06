@@ -16,9 +16,11 @@ MUSIC_STORAGE_TOKEN=$(openssl rand -hex 32) cargo run
 
 Then open <http://127.0.0.1:8080>. The upload panel is collapsed by default — open it with
 the button in the header; whether it is open or closed is remembered in `localStorage`.
-Paste the token into it once — that too is remembered, and it is only needed for uploading
-and deleting. Until a token is stored, the delete action is not shown at all; "forget
-token" hides it again.
+Below the upload form sits a separate token form: paste the token there once and press
+"remember token" — it is kept in `localStorage`, so deleting a track needs no upload, and
+uploading no longer asks for the token. A line under the forms always says whether a token
+is remembered. Until one is, the delete action is not shown at all; "forget token" hides
+it again.
 
 While a track is loaded, a bar fixed to the bottom of the main page shows its title and
 progress. The track page has its own player: a play/pause button next to a SoundCloud-style waveform
@@ -31,7 +33,11 @@ is remembered in `localStorage`; without one, the browser's language decides. Se
 messages are English, but the interface translates the common API errors by status code.
 
 The server must be started from a directory containing `static/`; that is the repository
-root when you use `cargo run`. For a release build:
+root when you use `cargo run`. Those files are served with `Cache-Control: no-cache`, so
+an edited page, script or stylesheet shows up on an ordinary reload — no hard reload
+needed — while unchanged files still answer with a `304`.
+
+For a release build:
 
 ```sh
 cargo build --release

@@ -193,12 +193,20 @@ Status codes used: `400`, `401`, `403`, `404`, `413`, `415`, `500`.
 Two pages, both plain HTML served from `static/`, both driven by the public API.
 The client sends the auth token only for upload and delete.
 
+Static files are served with `Cache-Control: no-cache`: there is no build step and so no
+content hashes in the filenames, and without that header a browser may serve an edited
+file from its cache until a hard reload. Revalidation is cheap — `ServeDir`'s `ETag`
+turns an unchanged file into a `304`.
+
 ### 6.1 Main page — `/` (`index.html`)
 
 - **Header**: app name on the left, a search input on the right.
-- **Upload area**: file picker, optional title input, token input, "Upload" button.
-  The token is remembered in `localStorage` so it does not need retyping; a small
-  "forget token" link clears it.
+- **Upload area**: file picker, optional title input, "Upload" button. The upload uses
+  the remembered token; without one it refuses and points at the token form.
+- **Token area**: a separate form below the upload one — token input, "Remember token"
+  button and a "forget token" link — so a token can be stored (and deleting done)
+  without uploading anything. The token lives in `localStorage`; a line below the forms
+  always states whether one is remembered.
 - **Track list**: one row per track showing title, filename, size and upload date,
   plus per-row actions:
   - **Play / Pause** — toggles a single shared `<audio>` element; starting a new
@@ -224,8 +232,8 @@ The client sends the auth token only for upload and delete.
 Minimalistic and linear-inspired: dark, calm, high information density, restrained
 borders, no shadows or gradients beyond a subtle hover state. Spotify-like green as
 the single accent colour, used for the active/primary affordances only — the play
-button, the currently playing row, focus rings and the upload button. Everything else
-stays neutral greys.
+button, the currently playing row, focus rings, the upload button and the line saying a
+token is remembered. Everything else stays neutral greys.
 
 | Token | Value | Used for |
 | --- | --- | --- |

@@ -11,11 +11,13 @@ use std::process::ExitCode;
 use std::sync::Arc;
 
 use axum::extract::DefaultBodyLimit;
+use axum::http::{header, HeaderValue};
 use axum::routing::{delete, get, post};
 use axum::Router;
 use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
 use tower_http::services::ServeDir;
+use tower_http::set_header::SetResponseHeaderLayer;
 
 use crate::store::Store;
 
@@ -109,9 +111,20 @@ fn build_router(store: Arc<Store>, token: Arc<String>, max_upload_bytes: usize) 
         .route("/tracks/{id}", track)
         .route("/tracks/{id}/stream", get(api::stream_track));
 
+    // There is no build step, so the static files keep their names across edits. Without a
+    // `Cache-Control` header browsers are free to guess a freshness lifetime from the file's
+    // age (RFC 9111 §4.2.2) and serve an edited file from cache until a hard reload;
+    // `no-cache` makes them revalidate every time, which the `ETag` answers with a 304.
+    let static_service = tower::ServiceBuilder::new()
+        .layer(SetResponseHeaderLayer::overriding(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("no-cache"),
+        ))
+        .service(ServeDir::new("static"));
+
     Router::new()
         .nest("/api", api_routes)
-        .fallback_service(ServeDir::new("static"))
+        .fallback_service(static_service)
         .with_state(store)
 }
 

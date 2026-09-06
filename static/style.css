@@ -133,9 +133,9 @@ button.icon, .btn.icon { padding: 6px 10px; }
 
 .linkish:hover:not(:disabled) { background: none; color: var(--text); }
 
-.upload {
+.upload,
+.token-form {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   margin: 20px 0;
@@ -145,19 +145,29 @@ button.icon, .btn.icon { padding: 6px 10px; }
   background: var(--surface);
 }
 
-.upload[hidden] { display: none; } /* the grid above would otherwise beat [hidden] */
+.upload { grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) auto; }
+.token-form { grid-template-columns: minmax(0, 1fr) auto auto; }
 
-.upload .token-row {
+/* the grids above would otherwise beat [hidden] */
+.upload[hidden],
+.token-form[hidden] { display: none; }
+
+.token-form .linkish { white-space: nowrap; }
+
+.token-form .token-hint {
   grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 10px;
+  margin: 0;
   font-size: 13px;
   color: var(--text-muted);
 }
 
-.upload .token-row .linkish { white-space: nowrap; }
+.token-status {
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.token-status.stored { color: var(--accent); }
 
 /* notices and empty states */
 
@@ -328,7 +338,8 @@ audio { display: none; } /* both pages drive playback from their own controls */
   header { flex-wrap: wrap; }
   .header-right { flex-basis: 100%; flex-wrap: wrap; }
   #search { flex: 1 1 150px; width: auto; }
-  .upload { grid-template-columns: 1fr; }
+  .upload,
+  .token-form { grid-template-columns: 1fr; }
   .row { flex-wrap: wrap; gap: 8px; }
   .row-main { flex-basis: 100%; }
   .row-actions { flex-wrap: wrap; margin-left: auto; }
