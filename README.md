@@ -1,5 +1,7 @@
 # music-storage
 
+[![CI](https://github.com/pwittchen/music-storage/actions/workflows/ci.yml/badge.svg)](https://github.com/pwittchen/music-storage/actions/workflows/ci.yml)
+
 Self-hosted minimal web app and REST API for storing, browsing and playing music files.
 
 No database, no build step, no frontend framework, no user accounts — a single Rust
