@@ -1,6 +1,6 @@
 # music-storage
 
-Self-hosted web app and REST API for storing, browsing and playing music files.
+Self-hosted minimal web app and REST API for storing, browsing and playing music files.
 
 No database, no build step, no frontend framework, no user accounts — a single Rust
 binary plus the `static/` directory. Metadata lives in one CSV file, audio files sit
