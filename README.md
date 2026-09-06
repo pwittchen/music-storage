@@ -54,6 +54,54 @@ cargo build --release
 MUSIC_STORAGE_TOKEN=… ./target/release/music-storage
 ```
 
+## Docker
+
+The image is built in two stages — a Rust builder and a `debian:bookworm-slim` runtime
+holding the binary, `static/` and nothing else worth mentioning (~157 MB). It runs as the
+unprivileged user `music` (uid 10001), listens on `0.0.0.0:8080` and keeps its data in
+`/data`, which is where you mount a volume.
+
+With Compose, put the token in a `.env` file next to `docker-compose.yml`:
+
+```sh
+echo "MUSIC_STORAGE_TOKEN=$(openssl rand -hex 32)" > .env
+docker compose up -d --build
+```
+
+Then open <http://127.0.0.1:8080>. The port is published on the loopback interface only;
+remove the `127.0.0.1:` prefix in `docker-compose.yml` to reach it from the network, or
+leave it and point a reverse proxy at it. Compose refuses to start without a token, and
+so does the server itself. Tracks live in the named volume `music-data`, so
+`docker compose down` keeps them and `docker compose down -v` deletes them.
+
+Without Compose:
+
+```sh
+docker build -t music-storage .
+docker run -d --name music-storage \
+  -e MUSIC_STORAGE_TOKEN=… \
+  -p 127.0.0.1:8080:8080 \
+  -v music-data:/data \
+  music-storage
+```
+
+`.env` is git-ignored. `MUSIC_STORAGE_MAX_UPLOAD_MB` can be set the same way (Compose
+passes it through, defaulting to 100); do not override `MUSIC_STORAGE_DATA_DIR` or
+`MUSIC_STORAGE_ADDR` — the image sets both, and a bind address other than `0.0.0.0`
+makes the container unreachable from outside.
+
+A fresh named volume inherits the image's ownership of `/data`, so it works as is. A bind
+mount (`-v ./data:/data`) keeps the host directory's owner instead, so `chown 10001` it
+first or the server will fail to write.
+
+The container has a health check that polls `GET /api/tracks` every 30 seconds; it shows
+up in `docker ps` and as `.State.Health.Status` in `docker inspect`.
+
+Rebuilds reuse a BuildKit cache for the cargo registry and `target/`, so editing a source
+file recompiles that crate and not its dependencies. The build context is restricted to
+`Cargo.toml`, `Cargo.lock`, `src/` and `static/`, which keeps `target/` and `data/` out of
+it.
+
 ## Configuration
 
 All configuration is via environment variables.

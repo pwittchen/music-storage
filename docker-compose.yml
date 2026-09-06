@@ -1,0 +1,18 @@
+services:
+  music-storage:
+    build: .
+    image: music-storage
+    container_name: music-storage
+    # Published on the loopback interface only; drop the `127.0.0.1:` prefix to expose
+    # the port on the whole network, or leave it and put a reverse proxy in front.
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      MUSIC_STORAGE_TOKEN: ${MUSIC_STORAGE_TOKEN:?set MUSIC_STORAGE_TOKEN in .env}
+      MUSIC_STORAGE_MAX_UPLOAD_MB: ${MUSIC_STORAGE_MAX_UPLOAD_MB:-100}
+    volumes:
+      - music-data:/data
+    restart: unless-stopped
+
+volumes:
+  music-data:
