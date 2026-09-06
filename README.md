@@ -8,6 +8,16 @@ No database, no build step, no frontend framework, no user accounts — a single
 binary plus the `static/` directory. Metadata lives in one CSV file, audio files sit
 next to it on disk. See [SPEC.md](SPEC.md) for the full specification.
 
+## Screenshots
+
+The track list, with the player bar at the bottom of the page:
+
+![Track list](screenshot-all.png)
+
+A single track, with the waveform that doubles as the seek bar:
+
+![Single track](screenshot-single.png)
+
 ## Running
 
 ```sh
