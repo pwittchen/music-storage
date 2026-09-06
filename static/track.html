@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Track — music-storage</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">music<span>-</span>storage</div>
+        <div class="header-right">
+          <a href="/" data-i18n="backToAll"></a>
+          <div class="lang" id="lang" role="group" aria-label="Language / Język">
+            <button type="button" data-lang="en">EN</button>
+            <button type="button" data-lang="pl">PL</button>
+          </div>
+        </div>
+      </header>
+
+      <p class="notice" id="notice" hidden role="status"></p>
+
+      <div class="detail" id="detail"></div>
+    </div>
+
+    <script type="module" src="/track.js"></script>
+  </body>
+</html>

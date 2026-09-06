@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>music-storage</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">music<span>-</span>storage</div>
+        <div class="header-right">
+          <input
+            id="search"
+            type="search"
+            autocomplete="off"
+            data-i18n-placeholder="searchPlaceholder"
+            data-i18n-label="searchLabel"
+          />
+          <button
+            type="button"
+            class="icon"
+            id="toggle-upload"
+            aria-controls="upload-form"
+            aria-expanded="false"
+          ></button>
+          <div class="lang" id="lang" role="group" aria-label="Language / Język">
+            <button type="button" data-lang="en">EN</button>
+            <button type="button" data-lang="pl">PL</button>
+          </div>
+        </div>
+      </header>
+
+      <form class="upload" id="upload-form" hidden>
+        <input
+          id="file"
+          type="file"
+          required
+          accept="audio/*,.mp3,.wav,.flac,.ogg,.oga,.opus,.m4a,.aac,.aiff,.aif,.wma"
+          data-i18n-label="fileLabel"
+        />
+        <input id="title" type="text" data-i18n-placeholder="titlePlaceholder" data-i18n-label="titleLabel" />
+        <input
+          id="token"
+          type="password"
+          autocomplete="off"
+          data-i18n-placeholder="tokenPlaceholder"
+          data-i18n-label="tokenLabel"
+        />
+        <button class="primary" type="submit" id="upload-button" data-i18n="upload"></button>
+        <div class="token-row">
+          <span data-i18n="tokenHint"></span>
+          <button type="button" class="linkish" id="forget-token" data-i18n="forgetToken"></button>
+        </div>
+      </form>
+
+      <p class="notice" id="notice" hidden role="status"></p>
+
+      <div id="list-container"></div>
+    </div>
+
+    <div class="player-bar" id="player-bar" hidden>
+      <div class="wrap player-bar-inner">
+        <span class="player-bar-title" id="player-bar-title"></span>
+        <div class="player-bar-track">
+          <div class="player-bar-fill" id="player-bar-fill"></div>
+        </div>
+        <span class="player-bar-time" id="player-bar-time"></span>
+      </div>
+    </div>
+
+    <audio id="player" preload="none"></audio>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
