@@ -1,6 +1,6 @@
 # plainsong
 
-[![CI](https://github.com/pwittchen/music-storage/actions/workflows/ci.yml/badge.svg)](https://github.com/pwittchen/music-storage/actions/workflows/ci.yml)
+[![CI](https://github.com/pwittchen/plainsong/actions/workflows/ci.yml/badge.svg)](https://github.com/pwittchen/plainsong/actions/workflows/ci.yml)
 
 Self-hosted minimal web app and REST API for storing, browsing and playing music files.
 
@@ -11,7 +11,7 @@ next to it on disk. See [SPEC.md](SPEC.md) for the full specification.
 ## Running
 
 ```sh
-MUSIC_STORAGE_TOKEN=$(openssl rand -hex 32) cargo run
+PLAINSONG_TOKEN=$(openssl rand -hex 32) cargo run
 ```
 
 Then open <http://127.0.0.1:8080>. The upload panel is collapsed by default — open it with
@@ -41,43 +41,43 @@ For a release build:
 
 ```sh
 cargo build --release
-MUSIC_STORAGE_TOKEN=… ./target/release/music-storage
+PLAINSONG_TOKEN=… ./target/release/plainsong
 ```
 
 ## Docker
 
 The image is built in two stages — a Rust builder and a `debian:bookworm-slim` runtime
 holding the binary, `static/` and nothing else worth mentioning (~157 MB). It runs as the
-unprivileged user `music` (uid 10001), listens on `0.0.0.0:8080` and keeps its data in
+unprivileged user `plainsong` (uid 10001), listens on `0.0.0.0:8080` and keeps its data in
 `/data`, which is where you mount a volume.
 
 With Compose, put the token in a `.env` file next to `docker-compose.yml`:
 
 ```sh
-echo "MUSIC_STORAGE_TOKEN=$(openssl rand -hex 32)" > .env
+echo "PLAINSONG_TOKEN=$(openssl rand -hex 32)" > .env
 docker compose up -d --build
 ```
 
 Then open <http://127.0.0.1:8080>. The port is published on the loopback interface only;
 remove the `127.0.0.1:` prefix in `docker-compose.yml` to reach it from the network, or
 leave it and point a reverse proxy at it. Compose refuses to start without a token, and
-so does the server itself. Tracks live in the named volume `music-data`, so
+so does the server itself. Tracks live in the named volume `plainsong-data`, so
 `docker compose down` keeps them and `docker compose down -v` deletes them.
 
 Without Compose:
 
 ```sh
-docker build -t music-storage .
-docker run -d --name music-storage \
-  -e MUSIC_STORAGE_TOKEN=… \
+docker build -t plainsong .
+docker run -d --name plainsong \
+  -e PLAINSONG_TOKEN=… \
   -p 127.0.0.1:8080:8080 \
-  -v music-data:/data \
-  music-storage
+  -v plainsong-data:/data \
+  plainsong
 ```
 
-`.env` is git-ignored. `MUSIC_STORAGE_MAX_UPLOAD_MB` can be set the same way (Compose
-passes it through, defaulting to 100); do not override `MUSIC_STORAGE_DATA_DIR` or
-`MUSIC_STORAGE_ADDR` — the image sets both, and a bind address other than `0.0.0.0`
+`.env` is git-ignored. `PLAINSONG_MAX_UPLOAD_MB` can be set the same way (Compose
+passes it through, defaulting to 100); do not override `PLAINSONG_DATA_DIR` or
+`PLAINSONG_ADDR` — the image sets both, and a bind address other than `0.0.0.0`
 makes the container unreachable from outside.
 
 A fresh named volume inherits the image's ownership of `/data`, so it works as is. A bind
@@ -98,20 +98,20 @@ All configuration is via environment variables.
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `MUSIC_STORAGE_TOKEN` | — (**required**) | Auth token for the mutating endpoints |
-| `MUSIC_STORAGE_DATA_DIR` | `./data` | Where `metadata.csv` and `files/` live |
-| `MUSIC_STORAGE_ADDR` | `127.0.0.1:8080` | Bind address (host and port) |
-| `MUSIC_STORAGE_PORT` | — | Port only; overrides the port in `MUSIC_STORAGE_ADDR` |
-| `MUSIC_STORAGE_MAX_UPLOAD_MB` | `100` | Maximum upload size in megabytes |
+| `PLAINSONG_TOKEN` | — (**required**) | Auth token for the mutating endpoints |
+| `PLAINSONG_DATA_DIR` | `./data` | Where `metadata.csv` and `files/` live |
+| `PLAINSONG_ADDR` | `127.0.0.1:8080` | Bind address (host and port) |
+| `PLAINSONG_PORT` | — | Port only; overrides the port in `PLAINSONG_ADDR` |
+| `PLAINSONG_MAX_UPLOAD_MB` | `100` | Maximum upload size in megabytes |
 
-Set `MUSIC_STORAGE_PORT` to change the port while keeping the default bind host, or
-`MUSIC_STORAGE_ADDR` to set both at once — for example `MUSIC_STORAGE_ADDR=0.0.0.0:8080`
+Set `PLAINSONG_PORT` to change the port while keeping the default bind host, or
+`PLAINSONG_ADDR` to set both at once — for example `PLAINSONG_ADDR=0.0.0.0:8080`
 to accept connections from outside the machine. When both are set, the port from
-`MUSIC_STORAGE_PORT` wins and the host from `MUSIC_STORAGE_ADDR` is kept. Port `0` lets
+`PLAINSONG_PORT` wins and the host from `PLAINSONG_ADDR` is kept. Port `0` lets
 the OS pick a free port; the startup line then reports the one it got.
 
 ```sh
-MUSIC_STORAGE_TOKEN=… MUSIC_STORAGE_PORT=9000 cargo run
+PLAINSONG_TOKEN=… PLAINSONG_PORT=9000 cargo run
 ```
 
 Startup fails with a clear message if the token is unset or empty. The data directory,
@@ -134,7 +134,7 @@ Errors are always `{"error": "…"}` with status `400`, `401`, `403`, `404`, `41
 or `500`.
 
 ```sh
-curl -H "Authorization: Bearer $MUSIC_STORAGE_TOKEN" \
+curl -H "Authorization: Bearer $PLAINSONG_TOKEN" \
      -F file=@song.mp3 -F title="My Song" \
      http://127.0.0.1:8080/api/tracks
 

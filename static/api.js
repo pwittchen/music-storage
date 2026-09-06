@@ -22,7 +22,7 @@ export function el(tag, props = {}, ...children) {
   return node;
 }
 
-const TOKEN_KEY = "music-storage-token";
+const TOKEN_KEY = "plainsong-token";
 
 export function getToken() {
   try {

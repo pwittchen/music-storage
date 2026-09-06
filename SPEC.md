@@ -1,4 +1,4 @@
-# music-storage — Specification
+# plainsong — Specification
 
 Self-hosted web app and REST API for storing, browsing and playing music files.
 
@@ -172,7 +172,7 @@ Deletes the metadata row and the file on disk. `204 No Content`, or `404` if unk
 
 ### Authentication
 
-- A single static token, read from the `MUSIC_STORAGE_TOKEN` environment variable at
+- A single static token, read from the `PLAINSONG_TOKEN` environment variable at
   startup. The server refuses to start if it is unset or empty.
 - Clients send it as `Authorization: Bearer <token>`.
 - Comparison is constant-time.
@@ -266,10 +266,10 @@ All configuration comes from environment variables; there is no config file.
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `MUSIC_STORAGE_TOKEN` | — (**required**) | Auth token for mutating endpoints |
-| `MUSIC_STORAGE_DATA_DIR` | `./data` | Where `metadata.csv` and `files/` live |
-| `MUSIC_STORAGE_ADDR` | `127.0.0.1:8080` | Bind address |
-| `MUSIC_STORAGE_MAX_UPLOAD_MB` | `100` | Maximum upload size in megabytes |
+| `PLAINSONG_TOKEN` | — (**required**) | Auth token for mutating endpoints |
+| `PLAINSONG_DATA_DIR` | `./data` | Where `metadata.csv` and `files/` live |
+| `PLAINSONG_ADDR` | `127.0.0.1:8080` | Bind address |
+| `PLAINSONG_MAX_UPLOAD_MB` | `100` | Maximum upload size in megabytes |
 
 On startup the server creates `DATA_DIR` and `DATA_DIR/files` if missing, and creates
 `metadata.csv` with just a header row if missing.
@@ -279,7 +279,7 @@ On startup the server creates `DATA_DIR` and `DATA_DIR/files` if missing, and cr
 ## 8. Project layout
 
 ```
-music-storage/
+plainsong/
   Cargo.toml
   SPEC.md
   README.md
@@ -325,7 +325,7 @@ Modest but not naive, given this is meant to be self-hosted:
 
 The project is done when all of the following hold:
 
-1. `cargo run` with `MUSIC_STORAGE_TOKEN` set starts the server; without it, startup
+1. `cargo run` with `PLAINSONG_TOKEN` set starts the server; without it, startup
    fails with a clear message.
 2. Uploading an `.mp3` through the web interface stores the file and adds one row to
    `metadata.csv`; the row survives a restart.

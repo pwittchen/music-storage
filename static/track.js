@@ -235,7 +235,7 @@ function render() {
     return;
   }
 
-  document.title = `${track.title} — music-storage`;
+  document.title = `${track.title} — plainsong`;
   buildPlayer();
   updatePlayButton();
   canvas.setAttribute("aria-label", t("seekHint"));

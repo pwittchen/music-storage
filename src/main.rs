@@ -1,4 +1,4 @@
-//! music-storage — a self-hosted web app and REST API for storing and playing
+//! plainsong — a self-hosted web app and REST API for storing and playing
 //! music files. Configuration comes from environment variables only; see README.md.
 
 mod api;
@@ -29,35 +29,35 @@ struct Config {
 }
 
 fn load_config() -> Result<Config, String> {
-    let token = std::env::var("MUSIC_STORAGE_TOKEN").unwrap_or_default();
+    let token = std::env::var("PLAINSONG_TOKEN").unwrap_or_default();
     if token.trim().is_empty() {
         return Err(
-            "MUSIC_STORAGE_TOKEN is not set. Set it to a non-empty secret before starting, \
-             e.g. MUSIC_STORAGE_TOKEN=$(openssl rand -hex 32) cargo run"
+            "PLAINSONG_TOKEN is not set. Set it to a non-empty secret before starting, \
+             e.g. PLAINSONG_TOKEN=$(openssl rand -hex 32) cargo run"
                 .to_string(),
         );
     }
 
-    let data_dir = PathBuf::from(env_or("MUSIC_STORAGE_DATA_DIR", "./data"));
+    let data_dir = PathBuf::from(env_or("PLAINSONG_DATA_DIR", "./data"));
 
-    // MUSIC_STORAGE_ADDR sets host and port together; MUSIC_STORAGE_PORT overrides just
+    // PLAINSONG_ADDR sets host and port together; PLAINSONG_PORT overrides just
     // the port, so the port can be changed without repeating the bind host.
-    let mut addr = env_or("MUSIC_STORAGE_ADDR", "127.0.0.1:8080");
-    if let Ok(raw_port) = std::env::var("MUSIC_STORAGE_PORT") {
+    let mut addr = env_or("PLAINSONG_ADDR", "127.0.0.1:8080");
+    if let Ok(raw_port) = std::env::var("PLAINSONG_PORT") {
         if !raw_port.trim().is_empty() {
             let port: u16 = raw_port.trim().parse().map_err(|_| {
-                format!("MUSIC_STORAGE_PORT is not a port number (0-65535): {raw_port}")
+                format!("PLAINSONG_PORT is not a port number (0-65535): {raw_port}")
             })?;
             addr = replace_port(&addr, port);
         }
     }
 
-    let raw_max = env_or("MUSIC_STORAGE_MAX_UPLOAD_MB", "100");
+    let raw_max = env_or("PLAINSONG_MAX_UPLOAD_MB", "100");
     let max_mb: usize = raw_max
         .parse()
-        .map_err(|_| format!("MUSIC_STORAGE_MAX_UPLOAD_MB is not a number: {raw_max}"))?;
+        .map_err(|_| format!("PLAINSONG_MAX_UPLOAD_MB is not a number: {raw_max}"))?;
     if max_mb == 0 {
-        return Err("MUSIC_STORAGE_MAX_UPLOAD_MB must be greater than zero".to_string());
+        return Err("PLAINSONG_MAX_UPLOAD_MB must be greater than zero".to_string());
     }
 
     Ok(Config {
@@ -134,7 +134,7 @@ async fn main() -> ExitCode {
     let config = match load_config() {
         Ok(config) => config,
         Err(message) => {
-            eprintln!("music-storage: {message}");
+            eprintln!("plainsong: {message}");
             return ExitCode::FAILURE;
         }
     };
@@ -143,7 +143,7 @@ async fn main() -> ExitCode {
         Ok(store) => Arc::new(store),
         Err(e) => {
             eprintln!(
-                "music-storage: cannot use data directory {}: {e}",
+                "plainsong: cannot use data directory {}: {e}",
                 config.data_dir.display()
             );
             return ExitCode::FAILURE;
@@ -152,7 +152,7 @@ async fn main() -> ExitCode {
 
     if !std::path::Path::new("static").is_dir() {
         eprintln!(
-            "music-storage: warning — ./static not found relative to the working directory; \
+            "plainsong: warning — ./static not found relative to the working directory; \
              the web interface will return 404s"
         );
     }
@@ -162,7 +162,7 @@ async fn main() -> ExitCode {
     let listener = match tokio::net::TcpListener::bind(&config.addr).await {
         Ok(listener) => listener,
         Err(e) => {
-            eprintln!("music-storage: cannot bind {}: {e}", config.addr);
+            eprintln!("plainsong: cannot bind {}: {e}", config.addr);
             return ExitCode::FAILURE;
         }
     };
@@ -174,13 +174,13 @@ async fn main() -> ExitCode {
         .unwrap_or_else(|_| config.addr.clone());
 
     println!(
-        "music-storage listening on http://{bound} (data dir: {}, max upload: {} MB)",
+        "plainsong listening on http://{bound} (data dir: {}, max upload: {} MB)",
         config.data_dir.display(),
         config.max_upload_bytes / 1024 / 1024
     );
 
     if let Err(e) = axum::serve(listener, app).await {
-        eprintln!("music-storage: server error: {e}");
+        eprintln!("plainsong: server error: {e}");
         return ExitCode::FAILURE;
     }
     ExitCode::SUCCESS

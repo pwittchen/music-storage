@@ -104,7 +104,7 @@ const STRINGS = {
   },
 };
 
-const LANG_KEY = "music-storage-lang";
+const LANG_KEY = "plainsong-lang";
 
 function initialLang() {
   try {

@@ -57,7 +57,7 @@ function showNotice(message, kind = "error") {
 
 // --- upload panel visibility ------------------------------------------------
 
-const PANEL_KEY = "music-storage-upload-open";
+const PANEL_KEY = "plainsong-upload-open";
 
 /** The panel starts hidden; only an explicit "open" from a previous visit opens it. */
 let panelOpen = (() => {
