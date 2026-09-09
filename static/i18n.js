@@ -34,6 +34,8 @@ const STRINGS = {
     back: "Back",
     backToAll: "← Back to all tracks",
     confirmDelete: "Delete this track?",
+    trackCount_one: "{count} track",
+    trackCount_other: "{count} tracks",
     noTracks: "No tracks yet. Upload an audio file to get started.",
     noMatch: "Nothing matches “{query}”.",
     uploaded: "Uploaded “{title}”.",
@@ -86,6 +88,9 @@ const STRINGS = {
     back: "Wróć",
     backToAll: "← Wróć do listy",
     confirmDelete: "Usunąć ten utwór?",
+    trackCount_one: "{count} utwór",
+    trackCount_few: "{count} utwory",
+    trackCount_many: "{count} utworów",
     noTracks: "Nie ma tu jeszcze nic. Wyślij plik audio, żeby zacząć.",
     noMatch: "Nic nie pasuje do „{query}”.",
     uploaded: "Wysłano „{title}”.",
@@ -137,6 +142,14 @@ export function lang() {
 export function t(key, vars = {}) {
   const template = STRINGS[current][key] ?? STRINGS.en[key] ?? key;
   return template.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "");
+}
+
+/**
+ * A translated string whose wording depends on a number, e.g. `1 utwór` / `5 utworów`.
+ * The plural forms are stored as `key_one`, `key_few`, … — whichever the language has.
+ */
+export function tCount(key, count) {
+  return t(`${key}_${new Intl.PluralRules(current).select(count)}`, { count });
 }
 
 /** A translated message for a failed API call, falling back to the server's own text. */

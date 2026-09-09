@@ -60,9 +60,14 @@ header {
   border-bottom: 1px solid var(--border);
 }
 
+.brand-block { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 .brand { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
 .brand span { color: var(--accent); }
 .header-right { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+/* how many tracks are stored, next to the brand */
+.track-count { color: var(--text-muted); font-size: 13px; white-space: nowrap; }
+.track-count:empty { display: none; }
 
 /* language switch */
 

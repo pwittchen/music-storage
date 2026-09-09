@@ -15,7 +15,7 @@ import {
   uploadTrack,
 } from "./api.js";
 import { applyAppTitle } from "./config.js";
-import { apiErrorMessage, mountLanguageSwitch, t } from "./i18n.js";
+import { apiErrorMessage, mountLanguageSwitch, t, tCount } from "./i18n.js";
 import { mountThemeSwitch, renderThemeButton } from "./theme.js";
 
 const $ = (id) => document.getElementById(id);
@@ -44,9 +44,13 @@ const [progressBar, progressTitle, progressFill, progressTime] = [
   "player-bar-fill",
   "player-bar-time",
 ].map($);
+const trackCount = $("track-count");
 
 let tracks = [];
 let currentQuery = "";
+// How many tracks are stored, which a search must not change: it is read from an
+// unfiltered list and otherwise kept in step as tracks are uploaded and deleted.
+let total = 0;
 // The track the shared player is loaded with, held by reference so the progress bar
 // keeps its title even when a search filters that track out of the list.
 let playing = null;
@@ -101,6 +105,9 @@ function action(icon, label, tag = "button", props = {}) {
 // --- list rendering --------------------------------------------------------
 
 function render() {
+  // Nothing loaded yet, or nothing stored: the empty state already says so.
+  trackCount.textContent = total ? tCount("trackCount", total) : "";
+
   const rows = tracks.map(renderRow);
   listContainer.replaceChildren(
     rows.length
@@ -170,6 +177,7 @@ function confirmDelete(actions, track) {
       await deleteTrack(track.id, getToken());
       if (playing !== null && playing.id === track.id) stop();
       tracks = tracks.filter((other) => other.id !== track.id);
+      total -= 1;
       render();
       showNotice(t("deleted", { title: track.title }), "ok");
     } catch (e) {
@@ -247,6 +255,7 @@ async function load(query = currentQuery) {
   currentQuery = query;
   try {
     tracks = await listTracks(query);
+    if (!query) total = tracks.length; // an unfiltered list is the whole library
     render();
   } catch (e) {
     showNotice(apiErrorMessage(e));
@@ -277,6 +286,7 @@ form.addEventListener("submit", async (event) => {
   uploadButton.textContent = t("uploading");
   try {
     const track = await uploadTrack({ file, title: titleInput.value.trim(), token });
+    total += 1; // a reload of an unfiltered list overwrites this with the real count
     form.reset();
     showNotice(t("uploaded", { title: track.title }), "ok");
     await load();
