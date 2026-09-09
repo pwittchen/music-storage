@@ -132,6 +132,7 @@ Read endpoints are public; mutating ones need `Authorization: Bearer <token>`.
 | `GET` | `/api/tracks/{id}/stream` | no | The audio bytes, with range-request support |
 | `GET` | `/api/tracks/{id}/download` | no | The same bytes, as a file to save under the original filename |
 | `POST` | `/api/tracks` | yes | `multipart/form-data` with `file` and optional `title` |
+| `PATCH` | `/api/tracks/{id}` | yes | `{"title": "…"}` — renames the track; returns the updated metadata |
 | `DELETE` | `/api/tracks/{id}` | yes | Removes the metadata row and the file |
 
 Errors are always `{"error": "…"}` with status `400`, `401`, `403`, `404`, `413`, `415`
@@ -143,7 +144,15 @@ curl -H "Authorization: Bearer $PLAINSONG_TOKEN" \
      http://127.0.0.1:8080/api/tracks
 
 curl http://127.0.0.1:8080/api/tracks?q=jazz
+
+curl -X PATCH -H "Authorization: Bearer $PLAINSONG_TOKEN" \
+     -H "Content-Type: application/json" -d '{"title":"A Better Title"}' \
+     http://127.0.0.1:8080/api/tracks/7f1c…
 ```
+
+Only the title is editable; the file, its filename and the upload date stay as uploaded.
+The title is trimmed and capped at 255 characters, and a title that is empty after
+trimming is rejected with `400`.
 
 Accepted extensions: `.mp3 .wav .flac .ogg .oga .opus .m4a .aac .aiff .aif .wma`.
 The part's MIME type must also start with `audio/` (or be `application/ogg` /

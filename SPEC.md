@@ -167,6 +167,24 @@ filename, so the browser saves the file instead of playing it. `404` if unknown.
 { "id": "7f1c...", "filename": "song.mp3", "title": "My Song", ... }
 ```
 
+#### `PATCH /api/tracks/{id}`
+Edits a track's title. `application/json` body:
+
+```json
+{ "title": "A Better Title" }
+```
+
+The title is trimmed, stripped of control characters and capped at 255 characters;
+empty after trimming → `400`. Nothing else about the track can be changed — the file,
+its filename, size, content type and upload date are left alone.
+
+```
+200 OK
+{ "id": "7f1c...", "filename": "song.mp3", "title": "A Better Title", ... }
+```
+
+`404` if unknown, `415` without `Content-Type: application/json`.
+
 #### `DELETE /api/tracks/{id}`
 Deletes the metadata row and the file on disk. `204 No Content`, or `404` if unknown.
 
@@ -348,7 +366,7 @@ The project is done when all of the following hold:
 2. Uploading an `.mp3` through the web interface stores the file and adds one row to
    `metadata.csv`; the row survives a restart.
 3. Uploading a `.txt`, `.pdf` or `.mp4` is rejected with `415` and a visible message.
-4. `POST /api/tracks` and `DELETE /api/tracks/{id}` return `401` without a token and
+4. `POST`, `PATCH` and `DELETE` on `/api/tracks` return `401` without a token and
    `403` with a wrong one; `GET` endpoints work with no token at all.
 5. The main page lists every track and plays and pauses any of them without a page
    reload; only one track plays at a time.
@@ -365,5 +383,5 @@ The project is done when all of the following hold:
 ## 11. Possible follow-ups (not part of this scope)
 
 Listed only so they are not accidentally built now: ID3 tag reading for automatic
-titles, editing a title after upload, sorting options, duration display, drag-and-drop
-upload.
+titles, editing a title from the web interface (the API endpoint exists), sorting
+options, duration display, drag-and-drop upload.

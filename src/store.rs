@@ -83,6 +83,25 @@ impl Store {
         write_csv(&self.csv_path(), &tracks)
     }
 
+    /// Replace a track's title and persist the CSV. Returns `None` if the id is unknown;
+    /// the in-memory title is restored if the CSV cannot be written.
+    pub async fn set_title(&self, id: &str, title: String) -> io::Result<Option<Track>> {
+        let mut tracks = self.tracks.write().await;
+        let Some(track) = tracks.iter_mut().find(|t| t.id == id) else {
+            return Ok(None);
+        };
+        let previous = std::mem::replace(&mut track.title, title);
+        let updated = track.clone();
+
+        if let Err(e) = write_csv(&self.csv_path(), &tracks) {
+            if let Some(track) = tracks.iter_mut().find(|t| t.id == id) {
+                track.title = previous;
+            }
+            return Err(e);
+        }
+        Ok(Some(updated))
+    }
+
     /// Remove the metadata row (persisting the CSV first), then the audio file.
     /// Returns `false` if the id is unknown.
     pub async fn remove(&self, id: &str) -> io::Result<bool> {

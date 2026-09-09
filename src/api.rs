@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use axum::body::Body;
+use axum::extract::rejection::JsonRejection;
 use axum::extract::{Multipart, Path, Query, Request, State};
 use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -227,6 +228,36 @@ pub async fn upload_track(
     Ok((StatusCode::CREATED, Json(track)).into_response())
 }
 
+#[derive(Debug, Deserialize)]
+pub struct UpdateTrack {
+    pub title: String,
+}
+
+/// Rename a track. Only the title is editable; the file and everything derived from
+/// it stay as uploaded.
+pub async fn update_track(
+    State(store): State<AppState>,
+    Path(id): Path<String>,
+    body: Result<Json<UpdateTrack>, JsonRejection>,
+) -> Result<Json<Track>, ApiError> {
+    // axum's own rejection body is plain text; map it so every error stays `{"error": …}`.
+    let Json(body) = body.map_err(|e| match e {
+        JsonRejection::MissingJsonContentType(_) => {
+            ApiError::unsupported_media_type("expected `Content-Type: application/json`")
+        }
+        _ => ApiError::bad_request("body must be JSON with a `title` string"),
+    })?;
+
+    let title = normalize_title(&body.title)
+        .ok_or_else(|| ApiError::bad_request("`title` must not be empty"))?;
+
+    store
+        .set_title(&id, title)
+        .await?
+        .map(Json)
+        .ok_or_else(|| ApiError::not_found("track not found"))
+}
+
 pub async fn delete_track(
     State(store): State<AppState>,
     Path(id): Path<String>,
@@ -295,8 +326,8 @@ async fn read_upload(
     }
 
     let title = title
-        .map(|t| t.trim().to_string())
-        .filter(|t| !t.is_empty())
+        .as_deref()
+        .and_then(normalize_title)
         .unwrap_or_else(|| default_title(&filename));
 
     Ok(Track {
@@ -308,6 +339,20 @@ async fn read_upload(
         uploaded_at: crate::now_rfc3339(),
     })
 }
+
+/// Trim a title, drop control characters and cap its length. `None` when nothing
+/// usable is left — the caller decides whether that is a fallback or an error.
+fn normalize_title(raw: &str) -> Option<String> {
+    let cleaned: String = raw
+        .chars()
+        .filter(|c| !c.is_control())
+        .take(TITLE_MAX_CHARS)
+        .collect();
+    let cleaned = cleaned.trim().to_string();
+    (!cleaned.is_empty()).then_some(cleaned)
+}
+
+const TITLE_MAX_CHARS: usize = 255;
 
 /// Filename without its extension.
 fn default_title(filename: &str) -> String {

@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 use axum::extract::DefaultBodyLimit;
 use axum::http::{header, HeaderValue};
-use axum::routing::{delete, get, post};
+use axum::routing::{get, patch, post};
 use axum::Router;
 use time::format_description::well_known::Rfc3339;
 use time::OffsetDateTime;
@@ -104,7 +104,11 @@ fn build_router(store: Arc<Store>, token: Arc<String>, max_upload_bytes: usize) 
             .route_layer(guard.clone())
             .layer(DefaultBodyLimit::max(max_upload_bytes)),
     );
-    let track = get(api::get_track).merge(delete(api::delete_track).route_layer(guard));
+    let track = get(api::get_track).merge(
+        patch(api::update_track)
+            .delete(api::delete_track)
+            .route_layer(guard),
+    );
 
     let api_routes = Router::new()
         .route("/tracks", tracks)
