@@ -12,6 +12,7 @@ import {
   getTrack,
   streamUrl,
 } from "./api.js";
+import { appTitle, applyAppTitle } from "./config.js";
 import { apiErrorMessage, applyStaticText, mountLanguageSwitch, t } from "./i18n.js";
 import { mountThemeSwitch, renderThemeButton } from "./theme.js";
 
@@ -240,7 +241,7 @@ function render() {
     return;
   }
 
-  document.title = `${track.title} — plainsong`;
+  document.title = `${track.title} — ${appTitle}`;
   buildPlayer();
   updatePlayButton();
   canvas.setAttribute("aria-label", t("seekHint"));
@@ -308,6 +309,7 @@ function confirmDelete(actions) {
   );
 }
 
+applyAppTitle();
 applyStaticText(); // the header is translated before the metadata request resolves
 
 // The waveform is painted on a canvas, so it has to be repainted in the new palette.

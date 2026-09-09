@@ -1,5 +1,7 @@
 // UI strings for English and Polish, plus the language switch shared by both pages.
-// The chosen language is remembered in localStorage.
+// The chosen language is remembered in localStorage, unless the server pins one.
+
+import { pinnedLang } from "./config.js";
 
 const STRINGS = {
   en: {
@@ -110,7 +112,12 @@ const STRINGS = {
 
 const LANG_KEY = "plainsong-lang";
 
+// A language the server pins the interface to; the switch is then left out entirely.
+// It is checked against the strings so that only a language we actually have wins.
+const pinned = pinnedLang && pinnedLang in STRINGS ? pinnedLang : null;
+
 function initialLang() {
+  if (pinned) return pinned;
   try {
     const saved = localStorage.getItem(LANG_KEY);
     if (saved && saved in STRINGS) return saved;
@@ -155,9 +162,19 @@ export function applyStaticText(root = document) {
 /**
  * Wire up the `#lang` button group. `onChange` re-renders whatever the page draws
  * itself; it is also called once on load so pages have a single render path.
+ *
+ * With a pinned language there is nothing left to choose, so the group is removed
+ * and the page is drawn once in that language.
  */
 export function mountLanguageSwitch(onChange) {
   const group = document.getElementById("lang");
+
+  if (pinned) {
+    group.remove();
+    applyStaticText();
+    onChange();
+    return;
+  }
 
   const sync = () => {
     for (const button of group.children) {

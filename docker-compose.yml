@@ -10,6 +10,9 @@ services:
     environment:
       PLAINSONG_TOKEN: ${PLAINSONG_TOKEN:?set PLAINSONG_TOKEN in .env}
       PLAINSONG_MAX_UPLOAD_MB: ${PLAINSONG_MAX_UPLOAD_MB:-100}
+      # Both optional: pin the interface to `en` or `pl`, and rename the header.
+      PLAINSONG_LANG: ${PLAINSONG_LANG:-}
+      PLAINSONG_TITLE: ${PLAINSONG_TITLE:-}
     volumes:
       - plainsong-data:/data
     restart: unless-stopped

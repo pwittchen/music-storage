@@ -31,6 +31,11 @@ stored server-side; the cost is one extra download of the file to decode it.
 The interface is available in English and Polish (`EN` / `PL` in the header). The choice
 is remembered in `localStorage`; without one, the browser's language decides. Server-side
 messages are English, but the interface translates the common API errors by status code.
+Set `PLAINSONG_LANG` to `en` or `pl` to pin the interface to that one language — the
+switch then disappears, since there is nothing left to choose.
+
+The header says "plainsong"; `PLAINSONG_TITLE` puts your own name there (and in the
+browser tab) instead.
 
 There are a dark and a light theme. Dark is the default; the icon button next to the
 language switch flips to the other one — it shows the theme it switches to — and the
@@ -79,8 +84,9 @@ docker run -d --name plainsong \
   plainsong
 ```
 
-`.env` is git-ignored. `PLAINSONG_MAX_UPLOAD_MB` can be set the same way (Compose
-passes it through, defaulting to 100); do not override `PLAINSONG_DATA_DIR` or
+`.env` is git-ignored. `PLAINSONG_MAX_UPLOAD_MB`, `PLAINSONG_LANG` and `PLAINSONG_TITLE`
+can be set the same way (Compose passes all three through, with the upload limit
+defaulting to 100 and the other two to unset); do not override `PLAINSONG_DATA_DIR` or
 `PLAINSONG_ADDR` — the image sets both, and a bind address other than `0.0.0.0`
 makes the container unreachable from outside.
 
@@ -107,6 +113,8 @@ All configuration is via environment variables.
 | `PLAINSONG_ADDR` | `127.0.0.1:8080` | Bind address (host and port) |
 | `PLAINSONG_PORT` | — | Port only; overrides the port in `PLAINSONG_ADDR` |
 | `PLAINSONG_MAX_UPLOAD_MB` | `100` | Maximum upload size in megabytes |
+| `PLAINSONG_LANG` | — | Pins the interface to `en` or `pl` and hides the language switch |
+| `PLAINSONG_TITLE` | `plainsong` | Title shown in the header and the browser tab |
 
 Set `PLAINSONG_PORT` to change the port while keeping the default bind host, or
 `PLAINSONG_ADDR` to set both at once — for example `PLAINSONG_ADDR=0.0.0.0:8080`
@@ -118,6 +126,16 @@ the OS pick a free port; the startup line then reports the one it got.
 PLAINSONG_TOKEN=… PLAINSONG_PORT=9000 cargo run
 ```
 
+`PLAINSONG_LANG` and `PLAINSONG_TITLE` are the two optional interface settings; left
+unset, the interface behaves as described above — the visitor picks the language and the
+header says "plainsong". The title is trimmed and capped at 255 characters, and one that
+is empty after trimming counts as unset. A `PLAINSONG_LANG` other than `en` or `pl` stops
+startup rather than being ignored. The web interface reads both from `GET /api/config`.
+
+```sh
+PLAINSONG_TOKEN=… PLAINSONG_LANG=pl PLAINSONG_TITLE="Moja Muzyka" cargo run
+```
+
 Startup fails with a clear message if the token is unset or empty. The data directory,
 `files/` and an empty `metadata.csv` are created on first run.
 
@@ -127,6 +145,7 @@ Read endpoints are public; mutating ones need `Authorization: Bearer <token>`.
 
 | Method | Path | Auth | Description |
 | --- | --- | --- | --- |
+| `GET` | `/api/config` | no | The interface settings: `{"lang": …, "title": …}`, both `null` unless configured |
 | `GET` | `/api/tracks?q=…` | no | All tracks, newest first; `q` filters by title and filename |
 | `GET` | `/api/tracks/{id}` | no | One track's metadata |
 | `GET` | `/api/tracks/{id}/stream` | no | The audio bytes, with range-request support |

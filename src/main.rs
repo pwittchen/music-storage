@@ -26,7 +26,11 @@ struct Config {
     data_dir: PathBuf,
     addr: String,
     max_upload_bytes: usize,
+    ui: api::UiConfig,
 }
+
+/// The languages the web interface ships strings for; `PLAINSONG_LANG` may pin one.
+const LANGUAGES: [&str; 2] = ["en", "pl"];
 
 fn load_config() -> Result<Config, String> {
     let token = std::env::var("PLAINSONG_TOKEN").unwrap_or_default();
@@ -60,11 +64,33 @@ fn load_config() -> Result<Config, String> {
         return Err("PLAINSONG_MAX_UPLOAD_MB must be greater than zero".to_string());
     }
 
+    // Both interface settings are optional: unset, the interface behaves exactly as it
+    // does without them — the visitor picks the language, and the header says "plainsong".
+    let lang = match std::env::var("PLAINSONG_LANG") {
+        Ok(raw) if !raw.trim().is_empty() => {
+            let lang = raw.trim().to_ascii_lowercase();
+            if !LANGUAGES.contains(&lang.as_str()) {
+                return Err(format!(
+                    "PLAINSONG_LANG must be one of {}: {raw}",
+                    LANGUAGES.join(", ")
+                ));
+            }
+            Some(lang)
+        }
+        _ => None,
+    };
+
+    let title = std::env::var("PLAINSONG_TITLE")
+        .ok()
+        .as_deref()
+        .and_then(api::normalize_title);
+
     Ok(Config {
         token,
         data_dir,
         addr,
         max_upload_bytes: max_mb * 1024 * 1024,
+        ui: api::UiConfig { lang, title },
     })
 }
 
@@ -95,7 +121,12 @@ pub fn now_rfc3339() -> String {
         .expect("RFC 3339 formatting cannot fail for a UTC timestamp")
 }
 
-fn build_router(store: Arc<Store>, token: Arc<String>, max_upload_bytes: usize) -> Router {
+fn build_router(
+    store: Arc<Store>,
+    token: Arc<String>,
+    max_upload_bytes: usize,
+    ui: api::UiConfig,
+) -> Router {
     // The auth layer guards only the mutating methods; `GET`s stay public.
     let guard = axum::middleware::from_fn_with_state(token, auth::require_token);
 
@@ -110,7 +141,15 @@ fn build_router(store: Arc<Store>, token: Arc<String>, max_upload_bytes: usize) 
             .route_layer(guard),
     );
 
+    // Read once at startup and never changed afterwards, so the handler just hands
+    // back its own copy rather than reaching into the shared state.
+    let config_route = get(move || {
+        let ui = ui.clone();
+        async move { axum::Json(ui) }
+    });
+
     let api_routes = Router::new()
+        .route("/config", config_route)
         .route("/tracks", tracks)
         .route("/tracks/{id}", track)
         .route("/tracks/{id}/stream", get(api::stream_track))
@@ -161,7 +200,12 @@ async fn main() -> ExitCode {
         );
     }
 
-    let app = build_router(store, Arc::new(config.token), config.max_upload_bytes);
+    let app = build_router(
+        store,
+        Arc::new(config.token),
+        config.max_upload_bytes,
+        config.ui,
+    );
 
     let listener = match tokio::net::TcpListener::bind(&config.addr).await {
         Ok(listener) => listener,

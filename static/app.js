@@ -14,6 +14,7 @@ import {
   streamUrl,
   uploadTrack,
 } from "./api.js";
+import { applyAppTitle } from "./config.js";
 import { apiErrorMessage, mountLanguageSwitch, t } from "./i18n.js";
 import { mountThemeSwitch, renderThemeButton } from "./theme.js";
 
@@ -319,6 +320,7 @@ forgetButton.addEventListener("click", () => {
 
 // --- start -----------------------------------------------------------------
 
+applyAppTitle();
 tokenInput.value = getToken();
 mountThemeSwitch(); // the page draws nothing in theme colours itself; the CSS does it all
 mountLanguageSwitch(() => {

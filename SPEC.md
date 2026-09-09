@@ -119,6 +119,15 @@ Base path: `/api`. All responses are JSON except the audio stream.
 
 ### Public (no auth)
 
+#### `GET /api/config`
+The interface settings, read from the environment at startup. Both fields are `null`
+unless configured, and the web interface then behaves as it does without them.
+
+```
+200 OK
+{ "lang": "pl", "title": "Moja Muzyka" }
+```
+
 #### `GET /api/tracks`
 List all tracks, newest first.
 
@@ -223,7 +232,9 @@ turns an unchanged file into a `304`.
 ### 6.1 Main page — `/` (`index.html`)
 
 - **Header**: app name on the left; on the right a search input, the upload toggle,
-  the theme switch and the `EN` / `PL` language switch.
+  the theme switch and the `EN` / `PL` language switch. The name is "plainsong" unless
+  `PLAINSONG_TITLE` gives it another one; the language switch is left out entirely when
+  `PLAINSONG_LANG` pins the interface to one language.
 - **Upload area**: file picker, optional title input, "Upload" button. The upload uses
   the remembered token; without one it refuses and points at the token form.
 - **Token area**: a separate form below the upload one — token input, "Remember token"
@@ -304,9 +315,18 @@ All configuration comes from environment variables; there is no config file.
 | `PLAINSONG_DATA_DIR` | `./data` | Where `metadata.csv` and `files/` live |
 | `PLAINSONG_ADDR` | `127.0.0.1:8080` | Bind address |
 | `PLAINSONG_MAX_UPLOAD_MB` | `100` | Maximum upload size in megabytes |
+| `PLAINSONG_LANG` | — | Pins the interface to `en` or `pl` and drops the language switch |
+| `PLAINSONG_TITLE` | `plainsong` | Title in the header and the browser tab |
 
 On startup the server creates `DATA_DIR` and `DATA_DIR/files` if missing, and creates
 `metadata.csv` with just a header row if missing.
+
+The last two are optional and affect nothing but the web interface, which reads them
+from `GET /api/config` before its first render. An unset value keeps the current
+behaviour: the visitor picks the language (the choice living in `localStorage`) and the
+header says "plainsong". A `PLAINSONG_LANG` outside the supported set fails startup, so a
+typo is not silently ignored; `PLAINSONG_TITLE` is trimmed, stripped of control
+characters and capped at 255 characters, and counts as unset when nothing is left.
 
 ---
 
@@ -329,6 +349,7 @@ plainsong/
     app.js         # main page logic
     track.js       # track page logic
     api.js         # tiny fetch wrapper shared by both pages
+    config.js      # the server's interface settings, fetched once
     i18n.js        # UI strings and the language switch
     theme.js       # the dark/light switch
     style.css

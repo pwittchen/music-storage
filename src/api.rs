@@ -9,7 +9,7 @@ use axum::extract::{Multipart, Path, Query, Request, State};
 use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tokio::io::AsyncWriteExt;
 use tower_http::services::ServeFile;
 use uuid::Uuid;
@@ -83,6 +83,16 @@ impl IntoResponse for ApiError {
 }
 
 // --- read endpoints ---------------------------------------------------------
+
+/// The two pieces of server configuration the web interface has to know before it
+/// draws anything: a pinned interface language, which replaces the language switch,
+/// and a custom header title. Both are `null` unless configured, which is the
+/// default and leaves the interface as it is.
+#[derive(Debug, Clone, Serialize)]
+pub struct UiConfig {
+    pub lang: Option<String>,
+    pub title: Option<String>,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct ListQuery {
@@ -342,7 +352,7 @@ async fn read_upload(
 
 /// Trim a title, drop control characters and cap its length. `None` when nothing
 /// usable is left — the caller decides whether that is a fallback or an error.
-fn normalize_title(raw: &str) -> Option<String> {
+pub fn normalize_title(raw: &str) -> Option<String> {
     let cleaned: String = raw
         .chars()
         .filter(|c| !c.is_control())
