@@ -15,6 +15,7 @@
   --waveform: #2f3237;
   --radius: 6px;
   --transition: 120ms ease;
+  --control-size: 37px; /* header search height, and the side of the square buttons next to it */
   color-scheme: dark;
 }
 
@@ -63,7 +64,8 @@ header {
 .brand-block { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 .brand { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
 .brand span { color: var(--accent); }
-.header-right { display: flex; align-items: center; gap: 10px; min-width: 0; }
+/* stretch, so the theme, language and menu buttons are as tall as the search input */
+.header-right { display: flex; align-items: stretch; gap: 10px; min-width: 0; }
 
 /* how many tracks are stored, next to the brand */
 .track-count { color: var(--text-muted); font-size: 13px; white-space: nowrap; }
@@ -94,7 +96,15 @@ header {
 
 /* theme switch: one button showing the theme it switches to */
 
-.theme { flex: none; padding: 6px 8px; color: var(--text-muted); }
+/* square, as tall as the search input */
+.theme {
+  flex: none;
+  justify-content: center;
+  width: var(--control-size);
+  height: var(--control-size);
+  padding: 0;
+  color: var(--text-muted);
+}
 .theme:hover:not(:disabled) { color: var(--text); }
 .theme svg { width: 15px; height: 15px; }
 
@@ -155,7 +165,7 @@ input[type="file"]::file-selector-button {
   cursor: pointer;
 }
 
-#search { width: 240px; }
+#search { width: 240px; height: var(--control-size); }
 
 button,
 .btn {
@@ -506,7 +516,15 @@ audio { display: none; } /* both pages drive playback from their own controls */
    opened by the menu button in the header. Everything in it is stacked and lined up on
    the left edge of its heading. */
 
-.menu { display: none; flex: none; padding: 6px 8px; color: var(--text-muted); }
+.menu {
+  display: none;
+  flex: none;
+  justify-content: center;
+  width: var(--control-size);
+  height: var(--control-size);
+  padding: 0;
+  color: var(--text-muted);
+}
 .menu:hover:not(:disabled) { color: var(--text); }
 .menu svg { width: 15px; height: 15px; }
 
@@ -561,6 +579,7 @@ audio { display: none; } /* both pages drive playback from their own controls */
   .row-main { flex-basis: 100%; }
   .row.sortable .row-main { flex-basis: 0; } /* keeps the title beside its handle */
   .row-actions { flex-wrap: wrap; margin-left: auto; }
+  #list-container .row-actions { margin-left: 0; } /* main page: actions start at the left edge */
   .detail dl { grid-template-columns: 1fr; gap: 2px; }
   .detail dd { margin-bottom: 8px; }
 }
