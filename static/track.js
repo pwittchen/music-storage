@@ -15,6 +15,7 @@ import {
 } from "./api.js";
 import { appTitle, applyAppTitle } from "./config.js";
 import { apiErrorMessage, applyStaticText, mountLanguageSwitch, t } from "./i18n.js";
+import { mountNav } from "./nav.js";
 import { forgetTrack, playlistsWith } from "./playlist-store.js";
 import { addToPlaylistModal, mountPlaylistNav } from "./playlist-ui.js";
 import { mountThemeSwitch, renderThemeButton } from "./theme.js";
@@ -335,6 +336,8 @@ function confirmDelete(actions) {
 }
 
 applyAppTitle();
+// A remembered or forgotten token shows or hides the delete button.
+mountNav({ notify: showNotice, onTokenChange: () => track && render() });
 mountPlaylistNav((playlist) => showNotice(t("playlistCreated", { name: playlist.name }), "ok"));
 applyStaticText(); // the header is translated before the metadata request resolves
 

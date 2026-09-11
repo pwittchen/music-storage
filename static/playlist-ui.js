@@ -3,6 +3,7 @@
 
 import { ICONS, el } from "./api.js";
 import { t, tCount } from "./i18n.js";
+import { modal, modalActions } from "./modal.js";
 import {
   NAME_MAX,
   cleanName,
@@ -11,53 +12,6 @@ import {
   playlistsWith,
   setTrackPlaylists,
 } from "./playlist-store.js";
-
-/**
- * A native modal <dialog>, which brings the focus trap and Escape for free; the CSS
- * blurs the page behind it. `done` resolves with the value given to `close`, or with
- * undefined when it is dismissed by Escape or a click on the backdrop.
- */
-function modal(heading, ...content) {
-  const dialog = el(
-    "dialog",
-    { className: "modal" },
-    el("div", { className: "modal-body" }, el("h2", { textContent: heading }), ...content),
-  );
-  dialog.setAttribute("aria-label", heading);
-
-  let value;
-  let resolve;
-  const done = new Promise((r) => (resolve = r));
-
-  // The body fills the dialog, so a click on the dialog itself is one on the backdrop.
-  // It must also have started there: a text selection dragged out of an input must not
-  // close the modal on release.
-  let pressedOutside = false;
-  dialog.addEventListener("pointerdown", (event) => (pressedOutside = event.target === dialog));
-  dialog.addEventListener("click", (event) => {
-    if (pressedOutside && event.target === dialog) dialog.close();
-  });
-
-  dialog.addEventListener("close", () => {
-    dialog.remove();
-    resolve(value);
-  });
-
-  document.body.append(dialog);
-  dialog.showModal();
-
-  return {
-    done,
-    close(result) {
-      value = result;
-      dialog.close();
-    },
-  };
-}
-
-function modalActions(...buttons) {
-  return el("div", { className: "modal-actions" }, ...buttons);
-}
 
 function nameInput(props = {}) {
   const input = el("input", {

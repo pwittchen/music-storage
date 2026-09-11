@@ -1,44 +1,17 @@
-// Main page: upload, search, list, play/pause, add to a playlist, delete.
+// Main page: search, list, play/pause, add to a playlist, delete. Adding a track and
+// the token live in the navigation (nav.js).
 
-import {
-  ICONS,
-  deleteTrack,
-  downloadUrl,
-  el,
-  formatDate,
-  formatSize,
-  getToken,
-  listTracks,
-  setToken,
-  uploadTrack,
-} from "./api.js";
+import { ICONS, deleteTrack, downloadUrl, el, formatDate, formatSize, getToken, listTracks } from "./api.js";
 import { applyAppTitle } from "./config.js";
 import { apiErrorMessage, mountLanguageSwitch, t, tCount } from "./i18n.js";
+import { mountNav } from "./nav.js";
 import { mountListPlayer } from "./player.js";
 import { forgetTrack } from "./playlist-store.js";
 import { addToPlaylistModal, mountPlaylistNav } from "./playlist-ui.js";
 import { mountThemeSwitch, renderThemeButton } from "./theme.js";
 
 const $ = (id) => document.getElementById(id);
-const [search, notice, listContainer, form] = [
-  "search",
-  "notice",
-  "list-container",
-  "upload-form",
-].map($);
-const [fileInput, titleInput, uploadButton, uploadToggle] = [
-  "file",
-  "title",
-  "upload-button",
-  "toggle-upload",
-].map($);
-const [tokenForm, tokenInput, forgetButton, tokenStatus] = [
-  "token-form",
-  "token",
-  "forget-token",
-  "token-status",
-].map($);
-const trackCount = $("track-count");
+const [search, notice, listContainer, trackCount] = ["search", "notice", "list-container", "track-count"].map($);
 
 let tracks = [];
 let currentQuery = "";
@@ -51,38 +24,6 @@ function showNotice(message, kind = "error") {
   notice.className = `notice ${kind}`;
   notice.hidden = false;
 }
-
-// --- upload panel visibility ------------------------------------------------
-
-const PANEL_KEY = "plainsong-upload-open";
-
-/** The panel starts hidden; only an explicit "open" from a previous visit opens it. */
-let panelOpen = (() => {
-  try {
-    return localStorage.getItem(PANEL_KEY) === "1";
-  } catch {
-    return false;
-  }
-})();
-
-function renderPanel() {
-  form.hidden = tokenForm.hidden = !panelOpen;
-  uploadToggle.setAttribute("aria-expanded", String(panelOpen));
-  uploadToggle.title = t(panelOpen ? "hideUpload" : "showUpload");
-  uploadToggle.innerHTML = ICONS[panelOpen ? "minus" : "plus"];
-  uploadToggle.append(el("span", { className: "label", textContent: uploadToggle.title }));
-}
-
-uploadToggle.addEventListener("click", () => {
-  panelOpen = !panelOpen;
-  try {
-    localStorage.setItem(PANEL_KEY, panelOpen ? "1" : "0");
-  } catch {
-    /* private mode: the panel still toggles, the choice is just not remembered */
-  }
-  renderPanel();
-  if (panelOpen) fileInput.focus();
-});
 
 /** A row action: an icon plus its label. */
 function action(icon, label, tag = "button", props = {}) {
@@ -221,76 +162,21 @@ search.addEventListener("input", () => {
   searchTimer = setTimeout(() => load(search.value.trim()), 200);
 });
 
-// --- upload and token ------------------------------------------------------
-
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  notice.hidden = true;
-
-  const file = fileInput.files[0];
-  const token = getToken();
-  if (!file) return showNotice(t("chooseFile"));
-  if (!token) {
-    showNotice(t("tokenRequired"));
-    return tokenInput.focus();
-  }
-
-  uploadButton.disabled = true;
-  uploadButton.textContent = t("uploading");
-  try {
-    const track = await uploadTrack({ file, title: titleInput.value.trim(), token });
-    total += 1; // a reload of an unfiltered list overwrites this with the real count
-    form.reset();
-    showNotice(t("uploaded", { title: track.title }), "ok");
-    await load();
-  } catch (e) {
-    showNotice(apiErrorMessage(e));
-  } finally {
-    uploadButton.disabled = false;
-    uploadButton.textContent = t("upload");
-  }
-});
-
-// --- token -----------------------------------------------------------------
-
-/** The stored token is what upload and delete use, so the page says whether there is one. */
-function renderToken() {
-  const stored = Boolean(getToken());
-  tokenStatus.textContent = t(stored ? "tokenStatusOn" : "tokenStatusOff");
-  tokenStatus.className = stored ? "token-status stored" : "token-status";
-  forgetButton.disabled = !stored;
-}
-
-// Remembering the token is its own form: deleting a track needs no upload.
-tokenForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const token = tokenInput.value.trim();
-  if (!token) return showNotice(t("tokenEmpty"));
-
-  setToken(token);
-  renderToken();
-  render(); // the delete actions appear as soon as there is a token
-  showNotice(t("tokenRemembered"), "ok");
-});
-
-forgetButton.addEventListener("click", () => {
-  setToken("");
-  tokenInput.value = "";
-  renderToken();
-  render();
-  showNotice(t("tokenForgotten"), "ok");
-});
-
 // --- start -----------------------------------------------------------------
 
 applyAppTitle();
-tokenInput.value = getToken();
 mountThemeSwitch(); // the page draws nothing in theme colours itself; the CSS does it all
+mountNav({
+  notify: showNotice,
+  onUploaded: () => {
+    total += 1; // a reload of an unfiltered list overwrites this with the real count
+    load();
+  },
+  onTokenChange: render, // the delete actions come and go with the token
+});
 mountPlaylistNav((playlist) => showNotice(t("playlistCreated", { name: playlist.name }), "ok"));
 mountLanguageSwitch(() => {
-  renderPanel(); // the toggle's label is built in JS, so it needs re-translating too
   renderThemeButton();
-  renderToken();
   render();
 });
 load("");

@@ -227,8 +227,20 @@ Three pages, all plain HTML served from `static/`, all driven by the public API.
 The client sends the auth token only for upload and delete.
 
 Under the header of every page sits a navigation row: "Tracks" (the main page),
-"Playlists" (the playlists page), the current one highlighted, and a "New playlist"
-button on the right that opens the create-playlist modal.
+"Playlists" (the playlists page), the current one highlighted, and on the right three
+buttons — "Add track", "Token" and "New playlist" — each opening its modal (see
+**Modals** in 6.3). The Token button's key icon is in the accent colour while a token is
+remembered.
+
+On a phone (up to 640 px wide) the navigation row and the language switch move into a
+drawer, so the header keeps only the search (on the main page), the theme switch and a
+menu button that opens it. The drawer is a native `<dialog>` along the right edge of the
+screen, with the page dimmed and blurred behind it as behind a modal; Escape, a click on
+the backdrop or its close button dismiss it. Inside, under a "Menu" heading, the links,
+the three buttons and the language switch are stacked, each lined up on the left edge of
+the heading. Picking a link or a button closes the drawer first; the language switch
+leaves it open. The page keeps a single copy of these controls: `nav.js` moves them into
+the drawer and back as the width crosses the breakpoint.
 
 Static files are served with `Cache-Control: no-cache`: there is no build step and so no
 content hashes in the filenames, and without that header a browser may serve an edited
@@ -237,16 +249,10 @@ turns an unchanged file into a `304`.
 
 ### 6.1 Main page — `/` (`index.html`)
 
-- **Header**: app name on the left; on the right a search input, the upload toggle,
-  the theme switch and the `EN` / `PL` language switch. The name is "plainsong" unless
-  `PLAINSONG_TITLE` gives it another one; the language switch is left out entirely when
-  `PLAINSONG_LANG` pins the interface to one language.
-- **Upload area**: file picker, optional title input, "Upload" button. The upload uses
-  the remembered token; without one it refuses and points at the token form.
-- **Token area**: a separate form below the upload one — token input, "Remember token"
-  button and a "forget token" link — so a token can be stored (and deleting done)
-  without uploading anything. The token lives in `localStorage`; a line below the forms
-  always states whether one is remembered.
+- **Header**: app name on the left; on the right a search input, the theme switch and
+  the `EN` / `PL` language switch. The name is "plainsong" unless `PLAINSONG_TITLE`
+  gives it another one; the language switch is left out entirely when `PLAINSONG_LANG`
+  pins the interface to one language.
 - **Track list**: one row per track showing title, filename, size and upload date,
   plus per-row actions:
   - **Play / Pause** — toggles a single shared `<audio>` element; starting a new
@@ -308,8 +314,18 @@ started without its data must not quietly empty every playlist.
 **Modals** are native `<dialog>` elements opened with `showModal()`, which gives the
 focus trap and Escape handling; a click on the backdrop closes them too. The page
 behind is dimmed and blurred (`backdrop-filter`), and the modal itself is a surface
-card like the rest of the interface. There are three:
+card like the rest of the interface. Every one is built by `modal.js`. There are five:
 
+- **Add track** — file picker, optional title and "Upload", which stays disabled until a
+  file is chosen. There is no token field: a line only says that a valid token is needed
+  to add a track — in the danger colour while none is remembered, when "Upload" stays
+  disabled too. The upload uses the remembered token; a failure, such as a wrong token,
+  is shown inside the modal, which stays open. While the upload runs the modal cannot be
+  dismissed; once it succeeds the modal closes and the main page reloads its list.
+- **Token** — whether a token is remembered, the token input with a hint that it stays
+  in this browser, "Remember token", "Cancel" and a "forget token" link, disabled while
+  none is remembered. The token lives in `localStorage`; the delete actions appear and
+  disappear with it.
 - **New playlist** — a name (trimmed, stripped of control characters, capped at 100
   characters, required) and "Create".
 - **Add to playlist** — every playlist as a checkbox, ticked where the track already
@@ -324,8 +340,9 @@ card like the rest of the interface. There are three:
 Minimalistic and linear-inspired: calm, high information density, restrained borders,
 no shadows or gradients beyond a subtle hover state. Spotify-like green as the single
 accent colour, used for the active/primary affordances only — the play button, the
-currently playing row, focus rings, the upload button and the line saying a token is
-remembered. Everything else stays neutral greys.
+currently playing row, focus rings, the Upload button, and the Token button's key icon
+and the Token modal's status line while a token is remembered. Everything else stays
+neutral greys.
 
 Two themes, dark by default. A single icon button in the header switches to the other
 one (it shows the theme it switches to) and the choice is remembered in `localStorage`;
@@ -356,7 +373,8 @@ that they still clear the contrast threshold as text on white.
 
 Typography: the system UI font stack, 14 px base, 13 px for metadata.
 Layout: single centred column, `max-width: 880px`, responsive down to a phone width
-(rows collapse to two lines, actions become icons).
+(rows collapse to two lines, actions become icons, and the navigation row and language
+switch move into the drawer described at the top of section 6).
 No animation beyond ~120 ms colour transitions.
 
 ---
@@ -408,7 +426,9 @@ plainsong/
     playlists.js   # playlists page logic
     player.js      # shared <audio> + bottom progress bar of the list pages
     playlist-store.js  # playlists in localStorage
-    playlist-ui.js # the modals and the "New playlist" button
+    modal.js       # the native <dialog> every modal is built on
+    nav.js         # "Add track" and "Token" with their modals, and the phone drawer
+    playlist-ui.js # the playlist modals and the "New playlist" button
     api.js         # tiny fetch wrapper shared by all pages
     config.js      # the server's interface settings, fetched once
     i18n.js        # UI strings and the language switch

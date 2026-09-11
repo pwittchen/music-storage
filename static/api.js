@@ -20,6 +20,10 @@ export const ICONS = {
   grip: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5h2v2H5zM9 2.5h2v2H9zM5 7h2v2H5zM9 7h2v2H9zM5 11.5h2v2H5zM9 11.5h2v2H9z"/></svg>',
   sun: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 4.6A3.4 3.4 0 1 0 8 11.4 3.4 3.4 0 0 0 8 4.6zM7.25 0h1.5v2.6h-1.5zM7.25 13.4h1.5V16h-1.5zM0 7.25h2.6v1.5H0zM13.4 7.25H16v1.5h-2.6zM2.05 3.11l1.06-1.06 1.84 1.84-1.06 1.06zM11.05 12.11l1.06-1.06 1.84 1.84-1.06 1.06zM13.95 3.11l-1.06-1.06-1.84 1.84 1.06 1.06zM4.95 12.11l-1.06-1.06-1.84 1.84 1.06 1.06z"/></svg>',
   moon: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.4 1.5a6.5 6.5 0 1 0 7.1 7.1A5.2 5.2 0 0 1 7.4 1.5z"/></svg>',
+  upload:
+    '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.25 11.5h1.5V5.31l2.22 2.22 1.06-1.06L8 1.44 3.97 6.47l1.06 1.06 2.22-2.22v6.19zM2.5 12h11v1.5h-11z"/></svg>',
+  key: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 4a4 4 0 1 0 3.87 5H10v2h1.5V9H13v2.5h1.5v-4H8.97A4 4 0 0 0 5 4zm0 2.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>',
+  menu: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3.5h12V5H2zM2 7.25h12v1.5H2zM2 11h12v1.5H2z"/></svg>',
 };
 
 /** `el("div", { className: "row" }, child, …)` — text is always set as text, never HTML. */

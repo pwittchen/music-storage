@@ -98,7 +98,8 @@ header {
 .theme:hover:not(:disabled) { color: var(--text); }
 .theme svg { width: 15px; height: 15px; }
 
-/* section navigation under the header: tracks, playlists, and a new playlist */
+/* section navigation under the header: tracks, playlists, and on the right the buttons
+   for adding a track, the token and a new playlist */
 
 .nav {
   display: flex;
@@ -119,7 +120,9 @@ header {
 
 .nav a:hover { background: var(--surface-hover); color: var(--text); }
 .nav a[aria-current="page"] { background: var(--surface-hover); color: var(--text); }
-.nav #new-playlist { margin-left: auto; font-size: 13px; }
+.nav-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.nav-actions button { font-size: 13px; }
+#token-button.stored svg { color: var(--accent); } /* a token is remembered */
 
 /* forms */
 
@@ -188,40 +191,8 @@ button.icon, .btn.icon { padding: 6px 10px; }
 
 .linkish:hover:not(:disabled) { background: none; color: var(--text); }
 
-.upload,
-.token-form {
-  display: grid;
-  gap: 10px;
-  align-items: center;
-  margin: 20px 0;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-}
-
-.upload { grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) auto; }
-.token-form { grid-template-columns: minmax(0, 1fr) auto auto; }
-
-/* the grids above would otherwise beat [hidden] */
-.upload[hidden],
-.token-form[hidden] { display: none; }
-
-.token-form .linkish { white-space: nowrap; }
-
-.token-form .token-hint {
-  grid-column: 1 / -1;
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.token-status {
-  margin: 12px 0;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
+/* whether a token is remembered, at the top of the token modal */
+.token-status { margin: 0; font-size: 13px; color: var(--text-muted); }
 .token-status.stored { color: var(--accent); }
 
 /* notices and empty states */
@@ -368,14 +339,16 @@ body.sorting, body.sorting .handle { cursor: grabbing; user-select: none; }
 }
 
 /* literal colours: ::backdrop does not inherit the custom properties in every browser */
-.modal::backdrop {
+.modal::backdrop,
+.drawer::backdrop {
   background: rgb(0 0 0 / 0.5);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 
-:root[data-theme="light"] .modal::backdrop { background: rgb(20 23 26 / 0.2); }
-html:has(.modal[open]) { overflow: hidden; } /* the page behind stays put */
+:root[data-theme="light"] .modal::backdrop,
+:root[data-theme="light"] .drawer::backdrop { background: rgb(20 23 26 / 0.2); }
+html:has(.modal[open], .drawer[open]) { overflow: hidden; } /* the page behind stays put */
 
 .modal-body { display: grid; gap: 14px; padding: 18px; }
 .modal h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
@@ -385,6 +358,10 @@ html:has(.modal[open]) { overflow: hidden; } /* the page behind stays put */
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .modal-create { display: flex; gap: 8px; }
 .modal-create input { flex: 1; }
+.modal-hint { margin: 0; color: var(--text-muted); font-size: 13px; }
+.modal-hint.warn { color: var(--danger); } /* uploading needs a token and there is none */
+.modal-error { margin: 0; color: var(--danger); font-size: 13px; }
+.modal-actions .linkish { margin-right: auto; white-space: nowrap; }
 
 .choices { max-height: 240px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); }
 .choices-empty { margin: 0; padding: 12px; color: var(--text-muted); font-size: 13px; }
@@ -525,14 +502,61 @@ audio { display: none; } /* both pages drive playback from their own controls */
   font-variant-numeric: tabular-nums;
 }
 
+/* phone drawer: the navigation row and the language switch, moved in by nav.js and
+   opened by the menu button in the header. Everything in it is stacked and lined up on
+   the left edge of its heading. */
+
+.menu { display: none; flex: none; padding: 6px 8px; color: var(--text-muted); }
+.menu:hover:not(:disabled) { color: var(--text); }
+.menu svg { width: 15px; height: 15px; }
+
+.drawer {
+  width: min(300px, calc(100vw - 48px));
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* fills the drawer, so that a click on the drawer itself is one on the backdrop */
+.drawer-body { display: flex; flex-direction: column; gap: 16px; min-height: 100%; padding: 16px 20px 20px; }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; }
+.drawer-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.drawer-close { margin-right: -8px; padding: 6px 8px; border-color: transparent; background: none; color: var(--text-muted); }
+
+.drawer .nav { flex-direction: column; align-items: stretch; gap: 2px; padding: 0; border: 0; }
+
+.drawer .nav-actions {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  margin: 8px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* the negative margin puts the text on the heading's edge and lets the hover bleed past it */
+.drawer .nav a,
+.drawer .nav button { justify-content: flex-start; margin: 0 -10px; padding: 8px 10px; font-size: 14px; }
+.drawer .nav button { border: 0; background: none; }
+.drawer .nav button:hover:not(:disabled) { background: var(--surface-hover); }
+.drawer .lang { align-self: flex-start; margin-top: auto; }
+
 /* phone: rows collapse to two lines, actions keep their labels and move to their own line */
 
 @media (max-width: 640px) {
   header { flex-wrap: wrap; }
   .header-right { flex-basis: 100%; flex-wrap: wrap; }
   #search { flex: 1 1 150px; width: auto; }
-  .upload,
-  .token-form { grid-template-columns: 1fr; }
+  .menu { display: inline-flex; }
+  /* moved into the drawer by nav.js; hidden here so they do not flash in before it runs */
+  .wrap > .nav,
+  header .lang { display: none; }
   .row { flex-wrap: wrap; gap: 8px; }
   .row-main { flex-basis: 100%; }
   .row.sortable .row-main { flex-basis: 0; } /* keeps the title beside its handle */

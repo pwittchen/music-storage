@@ -5,6 +5,7 @@
 import { ICONS, el, formatSize, listTracks } from "./api.js";
 import { appTitle, applyAppTitle } from "./config.js";
 import { apiErrorMessage, mountLanguageSwitch, t, tCount } from "./i18n.js";
+import { mountNav } from "./nav.js";
 import { mountListPlayer } from "./player.js";
 import { deletePlaylist, getPlaylist, listPlaylists, removeFromPlaylist, setOrder } from "./playlist-store.js";
 import { confirmModal, mountPlaylistNav } from "./playlist-ui.js";
@@ -359,6 +360,7 @@ const player = mountListPlayer({ onChange: refresh, onEnded: playNext, onError: 
 
 applyAppTitle();
 mountThemeSwitch();
+mountNav({ notify: showNotice });
 mountPlaylistNav((created) => {
   if (id === null) render(); // the new playlist joins the list on show
   showNotice(t("playlistCreated", { name: created.name }), "ok");

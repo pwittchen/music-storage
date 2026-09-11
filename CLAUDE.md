@@ -26,9 +26,13 @@ Frontend: plain ES modules in `static/`, with no build step and no framework.
   and syncing between browsers are explicitly out of scope.
 - A track deleted in the interface is passed to `forgetTrack`. Playlists never drop ids
   that the server doesn't know about on their own; those tracks show as unavailable.
-- `playlist-ui.js` holds the modals and the "New playlist" nav button. Modals are native
-  `<dialog>` elements opened with `showModal()`. Confirmations never use native
-  `confirm()`.
+- Every modal is built by `modal.js`: a native `<dialog>` opened with `showModal()`.
+  Confirmations never use native `confirm()`.
+- `playlist-ui.js` holds the playlist modals and the "New playlist" nav button. `nav.js`
+  holds the "Add track" and "Token" nav buttons with their modals, and the phone drawer
+  that the navigation row and the language switch move into.
+- The token is set only in the Token modal. The upload modal has no token field; it only
+  says that a valid token is needed.
 - Don't use `crypto.randomUUID()` in the browser. It only exists in a secure context,
   and instances are often reached over plain HTTP.
 - Every UI string goes in `i18n.js` in both `en` and `pl`.

@@ -31,53 +31,31 @@
             data-i18n-placeholder="searchPlaceholder"
             data-i18n-label="searchLabel"
           />
-          <button
-            type="button"
-            class="icon"
-            id="toggle-upload"
-            aria-controls="upload-form token-form"
-            aria-expanded="false"
-          ></button>
           <button type="button" class="theme" id="theme"></button>
           <div class="lang" id="lang" role="group" aria-label="Language / Język">
             <button type="button" data-lang="en">EN</button>
             <button type="button" data-lang="pl">PL</button>
           </div>
+          <button
+            type="button"
+            class="menu"
+            id="menu"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            data-i18n-label="menu"
+          ></button>
         </div>
       </header>
 
       <nav class="nav" data-i18n-label="navLabel">
         <a href="/" aria-current="page" data-i18n="navTracks"></a>
         <a href="/playlists.html" data-i18n="navPlaylists"></a>
-        <button type="button" class="icon" id="new-playlist"></button>
+        <div class="nav-actions">
+          <button type="button" class="icon" id="add-track"></button>
+          <button type="button" class="icon" id="token-button"></button>
+          <button type="button" class="icon" id="new-playlist"></button>
+        </div>
       </nav>
-
-      <form class="upload" id="upload-form" hidden>
-        <input
-          id="file"
-          type="file"
-          required
-          accept="audio/*,.mp3,.wav,.flac,.ogg,.oga,.opus,.m4a,.aac,.aiff,.aif,.wma"
-          data-i18n-label="fileLabel"
-        />
-        <input id="title" type="text" data-i18n-placeholder="titlePlaceholder" data-i18n-label="titleLabel" />
-        <button class="primary" type="submit" id="upload-button" data-i18n="upload"></button>
-      </form>
-
-      <form class="token-form" id="token-form" hidden>
-        <input
-          id="token"
-          type="password"
-          autocomplete="off"
-          data-i18n-placeholder="tokenPlaceholder"
-          data-i18n-label="tokenLabel"
-        />
-        <button type="submit" id="remember-token" data-i18n="rememberToken"></button>
-        <button type="button" class="linkish" id="forget-token" data-i18n="forgetToken"></button>
-        <p class="token-hint" data-i18n="tokenHint"></p>
-      </form>
-
-      <p class="token-status" id="token-status"></p>
 
       <p class="notice" id="notice" hidden role="status"></p>
 

@@ -14,13 +14,14 @@ next to it on disk. See [SPEC.md](SPEC.md) for the full specification.
 PLAINSONG_TOKEN=$(openssl rand -hex 32) cargo run
 ```
 
-Then open <http://127.0.0.1:8080>. The upload panel is collapsed by default — open it with
-the button in the header; whether it is open or closed is remembered in `localStorage`.
-Below the upload form sits a separate token form: paste the token there once and press
-"remember token" — it is kept in `localStorage`, so deleting a track needs no upload, and
-uploading no longer asks for the token. A line under the forms always says whether a token
-is remembered. Until one is, the delete action is not shown at all; "forget token" hides
-it again.
+Then open <http://127.0.0.1:8080>. The navigation row under the header holds "Add track"
+and "Token", each opening a modal. Paste the token into the Token modal once and press
+"remember token": it is kept in `localStorage`, the key icon on the button turns green,
+and uploading and deleting use it from then on. The Add track modal has no token field of
+its own — it only says that a valid token is needed, and "upload" stays disabled until one
+is remembered. Until then the delete action is not shown at all; "forget token" in the
+Token modal hides it again. On a phone the navigation, its buttons and the language
+switch move into a drawer behind the menu button in the header.
 
 While a track is loaded, a bar fixed to the bottom of the main page (and of a playlist)
 shows its title and progress. The track page has its own player: a play/pause button next to a SoundCloud-style waveform

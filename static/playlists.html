@@ -26,13 +26,25 @@
             <button type="button" data-lang="en">EN</button>
             <button type="button" data-lang="pl">PL</button>
           </div>
+          <button
+            type="button"
+            class="menu"
+            id="menu"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            data-i18n-label="menu"
+          ></button>
         </div>
       </header>
 
       <nav class="nav" data-i18n-label="navLabel">
         <a href="/" data-i18n="navTracks"></a>
         <a href="/playlists.html" aria-current="page" data-i18n="navPlaylists"></a>
-        <button type="button" class="icon" id="new-playlist"></button>
+        <div class="nav-actions">
+          <button type="button" class="icon" id="add-track"></button>
+          <button type="button" class="icon" id="token-button"></button>
+          <button type="button" class="icon" id="new-playlist"></button>
+        </div>
       </nav>
 
       <p class="notice" id="notice" hidden role="status"></p>
