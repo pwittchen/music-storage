@@ -66,6 +66,7 @@ header {
 .brand span { color: var(--accent); }
 /* stretch, so the theme, language and menu buttons are as tall as the search input */
 .header-right { display: flex; align-items: stretch; gap: 10px; min-width: 0; }
+.header-right > a { align-self: center; } /* a text link is centred on the buttons' line, not stretched */
 
 /* how many tracks are stored, next to the brand */
 .track-count { color: var(--text-muted); font-size: 13px; white-space: nowrap; }
@@ -246,7 +247,8 @@ button.icon, .btn.icon { padding: 6px 10px; }
 .row-meta { color: var(--text-muted); font-size: 13px; }
 .row-actions { display: flex; flex: none; align-items: center; gap: 6px; }
 .row-actions .play svg { color: var(--accent); }
-.row-actions .add { padding: 6px 8px; }
+/* icon only, so sized by hand: square, as tall as a labelled button (a line plus padding and border) */
+.row-actions .add { justify-content: center; width: calc(1.5em + 14px); height: calc(1.5em + 14px); padding: 0; }
 .confirm { color: var(--text-muted); font-size: 13px; }
 a.row-title { display: block; }
 
