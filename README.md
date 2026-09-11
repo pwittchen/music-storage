@@ -22,8 +22,8 @@ uploading no longer asks for the token. A line under the forms always says wheth
 is remembered. Until one is, the delete action is not shown at all; "forget token" hides
 it again.
 
-While a track is loaded, a bar fixed to the bottom of the main page shows its title and
-progress. The track page has its own player: a play/pause button next to a SoundCloud-style waveform
+While a track is loaded, a bar fixed to the bottom of the main page (and of a playlist)
+shows its title and progress. The track page has its own player: a play/pause button next to a SoundCloud-style waveform
 that doubles as the seek bar — click it, or focus it and use the arrow keys, Home and End.
 Peaks are computed in the browser with the Web Audio API, so nothing is generated or
 stored server-side; the cost is one extra download of the file to decode it.
@@ -37,6 +37,10 @@ playlists a track is on. In a playlist, drag the rows by their handles (or focus
 and use the arrow keys) to set the order, which is remembered too. Previous, play/pause
 and next buttons above the list play through it, and the auto-play switch, off by
 default, plays the tracks one after another on its own. Deleting a playlist asks first.
+Deleting a track in the interface also takes it off every playlist; a track deleted some
+other way (another browser, the API) stays listed as unavailable, with a button to remove
+it, rather than disappearing on its own. Clearing the browser's site data deletes the
+playlists with it.
 
 The interface is available in English and Polish (`EN` / `PL` in the header). The choice
 is remembered in `localStorage`; without one, the browser's language decides. Server-side
