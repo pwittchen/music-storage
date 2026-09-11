@@ -1,4 +1,5 @@
-// Track page: metadata for one track, a waveform player, and delete.
+// Track page: metadata for one track, the playlists it is on, a waveform player,
+// add to a playlist, and delete.
 
 import {
   ICONS,
@@ -14,6 +15,8 @@ import {
 } from "./api.js";
 import { appTitle, applyAppTitle } from "./config.js";
 import { apiErrorMessage, applyStaticText, mountLanguageSwitch, t } from "./i18n.js";
+import { forgetTrack, playlistsWith } from "./playlist-store.js";
+import { addToPlaylistModal, mountPlaylistNav } from "./playlist-ui.js";
 import { mountThemeSwitch, renderThemeButton } from "./theme.js";
 
 const detail = document.getElementById("detail");
@@ -24,9 +27,9 @@ const SEEK_STEP_SECONDS = 5;
 
 let track = null;
 
-function showNotice(message) {
+function showNotice(message, kind = "error") {
   notice.textContent = message;
-  notice.className = "notice error";
+  notice.className = `notice ${kind}`;
   notice.hidden = false;
 }
 
@@ -257,6 +260,19 @@ function render() {
     el("dd", { textContent: value }),
   ]);
 
+  // Only shown when the track is on at least one playlist, each name linking to it.
+  const playlists = playlistsWith(track.id);
+  if (playlists.length) {
+    const links = playlists.flatMap((playlist, index) => [
+      ...(index ? [", "] : []),
+      el("a", {
+        href: `/playlists.html?id=${encodeURIComponent(playlist.id)}`,
+        textContent: playlist.name,
+      }),
+    ]);
+    fields.push(el("dt", { textContent: t("fieldPlaylists") }), el("dd", {}, ...links));
+  }
+
   const actions = el(
     "div",
     { className: "detail-actions" },
@@ -270,6 +286,14 @@ function render() {
       download: track.filename,
     }),
   );
+
+  const add = action("plus", t("addToPlaylist"));
+  add.addEventListener("click", async () => {
+    if (!(await addToPlaylistModal(track))) return;
+    render(); // the playlists line above follows the new choice
+    showNotice(t("playlistsSaved", { title: track.title }), "ok");
+  });
+  actions.append(add);
 
   // Deleting needs a stored token, so the action only appears once there is one.
   if (getToken()) {
@@ -295,6 +319,7 @@ function confirmDelete(actions) {
     yes.disabled = cancel.disabled = true;
     try {
       await deleteTrack(track.id, getToken());
+      forgetTrack(track.id);
       location.href = "/";
     } catch (e) {
       restore();
@@ -310,6 +335,7 @@ function confirmDelete(actions) {
 }
 
 applyAppTitle();
+mountPlaylistNav((playlist) => showNotice(t("playlistCreated", { name: playlist.name }), "ok"));
 applyStaticText(); // the header is translated before the metadata request resolves
 
 // The waveform is painted on a canvas, so it has to be repainted in the new palette.

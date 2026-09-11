@@ -1,4 +1,4 @@
-// Main page: upload, search, list, play/pause, delete.
+// Main page: upload, search, list, play/pause, add to a playlist, delete.
 
 import {
   ICONS,
@@ -7,23 +7,23 @@ import {
   el,
   formatDate,
   formatSize,
-  formatTime,
   getToken,
   listTracks,
   setToken,
-  streamUrl,
   uploadTrack,
 } from "./api.js";
 import { applyAppTitle } from "./config.js";
 import { apiErrorMessage, mountLanguageSwitch, t, tCount } from "./i18n.js";
+import { mountListPlayer } from "./player.js";
+import { forgetTrack } from "./playlist-store.js";
+import { addToPlaylistModal, mountPlaylistNav } from "./playlist-ui.js";
 import { mountThemeSwitch, renderThemeButton } from "./theme.js";
 
 const $ = (id) => document.getElementById(id);
-const [search, notice, listContainer, player, form] = [
+const [search, notice, listContainer, form] = [
   "search",
   "notice",
   "list-container",
-  "player",
   "upload-form",
 ].map($);
 const [fileInput, titleInput, uploadButton, uploadToggle] = [
@@ -38,12 +38,6 @@ const [tokenForm, tokenInput, forgetButton, tokenStatus] = [
   "forget-token",
   "token-status",
 ].map($);
-const [progressBar, progressTitle, progressFill, progressTime] = [
-  "player-bar",
-  "player-bar-title",
-  "player-bar-fill",
-  "player-bar-time",
-].map($);
 const trackCount = $("track-count");
 
 let tracks = [];
@@ -51,9 +45,6 @@ let currentQuery = "";
 // How many tracks are stored, which a search must not change: it is read from an
 // unfiltered list and otherwise kept in step as tracks are uploaded and deleted.
 let total = 0;
-// The track the shared player is loaded with, held by reference so the progress bar
-// keeps its title even when a search filters that track out of the list.
-let playing = null;
 
 function showNotice(message, kind = "error") {
   notice.textContent = message;
@@ -120,12 +111,12 @@ function render() {
 }
 
 function renderRow(track) {
-  const active = playing !== null && playing.id === track.id && !player.paused;
+  const active = player.isPlaying(track.id);
 
   const play = action(active ? "pause" : "play", active ? t("pause") : t("play"), "button", {
     className: "icon play",
   });
-  play.addEventListener("click", () => toggle(track));
+  play.addEventListener("click", () => player.toggle(track));
 
   const open = action("open", t("open"), "a", {
     href: `/track.html?id=${encodeURIComponent(track.id)}`,
@@ -137,7 +128,19 @@ function renderRow(track) {
     download: track.filename,
   });
 
-  const actions = el("div", { className: "row-actions" }, play, open, save);
+  // A small icon-only button; the label is still there for screen readers and on hover.
+  const add = el("button", {
+    type: "button",
+    className: "icon add",
+    title: t("addToPlaylist"),
+    innerHTML: ICONS.plus,
+  });
+  add.setAttribute("aria-label", t("addToPlaylist"));
+  add.addEventListener("click", async () => {
+    if (await addToPlaylistModal(track)) showNotice(t("playlistsSaved", { title: track.title }), "ok");
+  });
+
+  const actions = el("div", { className: "row-actions" }, play, open, save, add);
 
   // Deleting needs a stored token, so the action only appears once there is one.
   if (getToken()) {
@@ -175,7 +178,8 @@ function confirmDelete(actions, track) {
     yes.disabled = cancel.disabled = true;
     try {
       await deleteTrack(track.id, getToken());
-      if (playing !== null && playing.id === track.id) stop();
+      if (player.isLoaded(track.id)) player.stop();
+      forgetTrack(track.id);
       tracks = tracks.filter((other) => other.id !== track.id);
       total -= 1;
       render();
@@ -195,59 +199,8 @@ function confirmDelete(actions, track) {
 
 // --- playback --------------------------------------------------------------
 
-function toggle(track) {
-  if (playing !== null && playing.id === track.id) {
-    if (!player.paused) return player.pause();
-  } else {
-    playing = track;
-    player.src = streamUrl(track.id);
-  }
-  player.play().catch((e) => showNotice(t("cannotPlay", { message: e.message })));
-}
-
-function stop() {
-  player.pause();
-  playing = null;
-  player.removeAttribute("src");
-  player.load();
-  renderProgress();
-}
-
-/** The fixed bar at the bottom: what is playing and how far in. */
-function renderProgress() {
-  progressBar.hidden = playing === null;
-  if (playing === null) return;
-
-  const { currentTime, duration } = player;
-  const ratio = Number.isFinite(duration) && duration > 0 ? currentTime / duration : 0;
-  progressTitle.textContent = playing.title;
-  progressFill.style.width = `${(ratio * 100).toFixed(2)}%`;
-  progressTime.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-}
-
-// A frame loop keeps the fill smooth; it only runs while something is actually playing.
-let progressFrame = null;
-function tick() {
-  renderProgress();
-  progressFrame = requestAnimationFrame(tick);
-}
-
-player.addEventListener("play", () => {
-  if (progressFrame === null) tick();
-  render();
-});
-for (const event of ["pause", "ended"]) {
-  player.addEventListener(event, () => {
-    cancelAnimationFrame(progressFrame);
-    progressFrame = null;
-    renderProgress();
-    render();
-  });
-}
-player.addEventListener("loadedmetadata", renderProgress);
-player.addEventListener("error", () => {
-  if (playing !== null) showNotice(t("playbackFailed"));
-});
+// Every play, pause and end redraws the list, so the active row follows the player.
+const player = mountListPlayer({ onChange: render, onError: showNotice });
 
 // --- search ----------------------------------------------------------------
 
@@ -333,6 +286,7 @@ forgetButton.addEventListener("click", () => {
 applyAppTitle();
 tokenInput.value = getToken();
 mountThemeSwitch(); // the page draws nothing in theme colours itself; the CSS does it all
+mountPlaylistNav((playlist) => showNotice(t("playlistCreated", { name: playlist.name }), "ok"));
 mountLanguageSwitch(() => {
   renderPanel(); // the toggle's label is built in JS, so it needs re-translating too
   renderThemeButton();

@@ -19,13 +19,15 @@ if something can be dropped without losing a listed requirement, it gets dropped
 - Deleting files
 - Searching files by filename and title
 - Playing / pausing a file in the browser
+- Playlists, kept in the browser's `localStorage` only (see 6.3)
 - Metadata (filename, title) stored in a CSV file on disk
 - REST API: mutating endpoints protected by a static auth token, read endpoints public
 
 ### Out of scope (explicitly not built)
 
 - User accounts, registration, sessions, roles
-- Playlists, albums, artists, genres, tags, ratings, play counts
+- Server-side playlists, or syncing playlists between browsers
+- Albums, artists, genres, tags, ratings, play counts
 - Audio transcoding, waveform generation, ID3 tag parsing
 - Cover art / thumbnails
 - Streaming to external clients, mobile apps
@@ -221,8 +223,12 @@ Status codes used: `400`, `401`, `403`, `404`, `413`, `415`, `500`.
 
 ## 6. Web interface
 
-Two pages, both plain HTML served from `static/`, both driven by the public API.
+Three pages, all plain HTML served from `static/`, all driven by the public API.
 The client sends the auth token only for upload and delete.
+
+Under the header of every page sits a navigation row: "Tracks" (the main page),
+"Playlists" (the playlists page), the current one highlighted, and a "New playlist"
+button on the right that opens the create-playlist modal.
 
 Static files are served with `Cache-Control: no-cache`: there is no build step and so no
 content hashes in the filenames, and without that header a browser may serve an edited
@@ -247,8 +253,10 @@ turns an unchanged file into a `304`.
     track stops the previous one; the active row is visually highlighted.
   - **Open** — navigates to the track page.
   - **Download** — saves the file under its original filename.
+  - **Add to playlist** — a small icon-only `+` button opening the add-to-playlist
+    modal (see 6.3).
   - **Delete** — asks for confirmation in-page (not a native `confirm()` dialog),
-    then calls the API and removes the row.
+    then calls the API and removes the row. The track also leaves every playlist.
 - **Search**: filters as you type, debounced ~200 ms, by calling
   `GET /api/tracks?q=…`. Search covers filename and title.
 - **Empty state**: a short line of text when there are no tracks, and a distinct one
@@ -256,14 +264,62 @@ turns an unchanged file into a `304`.
 
 ### 6.2 Track page — `/track.html?id={id}` (`track.html`)
 
-- Title as the heading, filename, MIME type, size and upload date below it.
+- Title as the heading, filename, MIME type, size and upload date below it — and,
+  only when the track is on any playlist, a "Playlists" line linking to each of them.
 - A single audio player with play/pause and a seek bar.
 - A "Download" link saving the file under its original filename.
+- An "Add to playlist" button opening the same modal as the main page's `+`.
 - A "Delete" button (uses the stored token).
 - A "Back" link to the main page.
 - Unknown id → a plain "Track not found" message with a back link.
 
-### 6.3 Visual design
+### 6.3 Playlists — `/playlists.html` (`playlists.html`)
+
+Playlists exist in the browser only: one `localStorage` key (`plainsong-playlists`)
+holds a JSON array of `{ id, name, trackIds }`, where the order of `trackIds` is the
+play order. The server knows nothing about them, so they are per browser and are not
+shared with anyone else who can reach the instance. A track is at most once on a
+playlist. Deleting a track through the interface removes it from every playlist; one
+deleted some other way (another browser, the API) stays listed as "Track no longer
+available" with a remove button, rather than being dropped automatically — a server
+started without its data must not quietly empty every playlist.
+
+- **All playlists** (no `id`): one row per playlist — its name (linking to it), how
+  many tracks it holds, "Open" and "Delete". Empty state when there are none.
+- **One playlist** (`?id=…`): the name as the heading; below it the playlist
+  controls — previous, play/pause and next — the track count, an **Auto-play** switch
+  and a "Delete playlist" button; then the tracks in order. Each row has a drag handle,
+  its position, title, filename and size, and Play / Pause, Open and "Remove from
+  playlist".
+  - **Controls**: play/pause pauses or resumes the loaded track, or starts the
+    playlist from the top when none of its tracks is loaded. Previous and next jump
+    to the neighbouring playable track (unavailable ones are skipped) and are
+    disabled at either end, or while nothing from the playlist is loaded.
+  - **Reordering**: drag a row by its handle (pointer events, so touch screens work
+    too), or focus the handle and use the arrow keys. The order is saved on release.
+  - **Auto-play**: off on every visit. When on, a track that ends hands over to the
+    next playable one below it; the last one just stops.
+  - Playback uses the same shared `<audio>` element and bottom progress bar as the
+    main page (`player.js`).
+  - Unknown id → "Playlist not found" with a link to all playlists.
+- **Deleting a playlist**, from either view, asks for confirmation in a modal. Deleted
+  from its own view, the page switches over to the list of all playlists.
+
+**Modals** are native `<dialog>` elements opened with `showModal()`, which gives the
+focus trap and Escape handling; a click on the backdrop closes them too. The page
+behind is dimmed and blurred (`backdrop-filter`), and the modal itself is a surface
+card like the rest of the interface. There are three:
+
+- **New playlist** — a name (trimmed, stripped of control characters, capped at 100
+  characters, required) and "Create".
+- **Add to playlist** — every playlist as a checkbox, ticked where the track already
+  is, so a track can be put on several at once (and unticking takes it off); "Save"
+  applies the choice, "Cancel" discards it. Below the list, a name input and "Create"
+  make a new playlist on the spot, which comes ticked. Without any playlists the list
+  is replaced by a line saying so, and the create input is all there is.
+- **Confirm deletion** — "Cancel" (focused) and "Delete".
+
+### 6.4 Visual design
 
 Minimalistic and linear-inspired: calm, high information density, restrained borders,
 no shadows or gradients beyond a subtle hover state. Spotify-like green as the single
@@ -346,9 +402,14 @@ plainsong/
   static/
     index.html
     track.html
+    playlists.html
     app.js         # main page logic
     track.js       # track page logic
-    api.js         # tiny fetch wrapper shared by both pages
+    playlists.js   # playlists page logic
+    player.js      # shared <audio> + bottom progress bar of the list pages
+    playlist-store.js  # playlists in localStorage
+    playlist-ui.js # the modals and the "New playlist" button
+    api.js         # tiny fetch wrapper shared by all pages
     config.js      # the server's interface settings, fetched once
     i18n.js        # UI strings and the language switch
     theme.js       # the dark/light switch

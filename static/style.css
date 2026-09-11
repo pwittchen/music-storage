@@ -98,6 +98,29 @@ header {
 .theme:hover:not(:disabled) { color: var(--text); }
 .theme svg { width: 15px; height: 15px; }
 
+/* section navigation under the header: tracks, playlists, and a new playlist */
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav a {
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition);
+}
+
+.nav a:hover { background: var(--surface-hover); color: var(--text); }
+.nav a[aria-current="page"] { background: var(--surface-hover); color: var(--text); }
+.nav #new-playlist { margin-left: auto; font-size: 13px; }
+
 /* forms */
 
 input {
@@ -242,7 +265,145 @@ button.icon, .btn.icon { padding: 6px 10px; }
 .row-meta { color: var(--text-muted); font-size: 13px; }
 .row-actions { display: flex; flex: none; align-items: center; gap: 6px; }
 .row-actions .play svg { color: var(--accent); }
+.row-actions .add { padding: 6px 8px; }
 .confirm { color: var(--text-muted); font-size: 13px; }
+a.row-title { display: block; }
+
+/* playlists page */
+
+.page-title { margin: 24px 0 12px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.crumb { display: inline-block; margin-top: 20px; color: var(--text-muted); font-size: 13px; }
+.crumb + .page-title { margin-top: 6px; }
+
+.playlist-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 14px; }
+.playlist-bar .danger { margin-left: auto; }
+.autoplay { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+
+/* playlist transport: previous, play/pause, next */
+.transport { display: inline-flex; align-items: center; gap: 2px; }
+
+.transport button {
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-color: transparent;
+  background: none;
+  color: var(--text-muted);
+}
+
+.transport button:hover:not(:disabled) { background: var(--surface-hover); color: var(--text); }
+
+.transport .transport-play {
+  width: 34px;
+  height: 34px;
+  margin: 0 2px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.transport .transport-play:hover:not(:disabled) { background: var(--accent-hover); color: var(--on-accent); }
+
+/* auto-play switch: a checkbox drawn as a small toggle. The padding and border the
+   generic input rule gives it would shift the knob off centre, so both are reset. */
+.toggle {
+  flex: none;
+  position: relative;
+  width: 28px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: var(--border-hover);
+  appearance: none;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.toggle::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text);
+  transition: transform var(--transition);
+}
+
+.toggle:checked { background: var(--accent); }
+.toggle:checked::before { background: var(--on-accent); transform: translateX(12px); }
+.toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* a playlist's rows: a drag handle and the position in front of each */
+.handle {
+  flex: none;
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  cursor: grab;
+  touch-action: none; /* a drag on the handle reorders instead of scrolling the page */
+}
+
+.handle:hover:not(:disabled) { background: none; color: var(--text); }
+.row-index { flex: none; min-width: 1.5em; color: var(--text-muted); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
+.row.dragging { background: var(--surface-hover); box-shadow: inset 2px 0 0 var(--text-muted); }
+body.sorting, body.sorting .handle { cursor: grabbing; user-select: none; }
+.row.unavailable .row-title { color: var(--text-muted); font-style: italic; }
+
+/* modals: a card over the page, which is blurred behind it */
+
+.modal {
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* literal colours: ::backdrop does not inherit the custom properties in every browser */
+.modal::backdrop {
+  background: rgb(0 0 0 / 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+:root[data-theme="light"] .modal::backdrop { background: rgb(20 23 26 / 0.2); }
+html:has(.modal[open]) { overflow: hidden; } /* the page behind stays put */
+
+.modal-body { display: grid; gap: 14px; padding: 18px; }
+.modal h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.modal-sub { margin: -8px 0 0; overflow: hidden; color: var(--text-muted); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.modal-text { margin: 0; color: var(--text-muted); }
+.modal-form { display: grid; gap: 14px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.modal-create { display: flex; gap: 8px; }
+.modal-create input { flex: 1; }
+
+.choices { max-height: 240px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+.choices-empty { margin: 0; padding: 12px; color: var(--text-muted); font-size: 13px; }
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.choice:last-child { border-bottom: 0; }
+.choice:hover { background: var(--surface-hover); }
+.choice input { flex: none; margin: 0; accent-color: var(--accent); }
+.choice-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.choice-count { flex: none; color: var(--text-muted); font-size: 12px; }
 
 /* track page */
 
@@ -374,6 +535,7 @@ audio { display: none; } /* both pages drive playback from their own controls */
   .token-form { grid-template-columns: 1fr; }
   .row { flex-wrap: wrap; gap: 8px; }
   .row-main { flex-basis: 100%; }
+  .row.sortable .row-main { flex-basis: 0; } /* keeps the title beside its handle */
   .row-actions { flex-wrap: wrap; margin-left: auto; }
   .detail dl { grid-template-columns: 1fr; gap: 2px; }
   .detail dd { margin-bottom: 8px; }

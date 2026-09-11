@@ -28,6 +28,16 @@ that doubles as the seek bar — click it, or focus it and use the arrow keys, H
 Peaks are computed in the browser with the Web Audio API, so nothing is generated or
 stored server-side; the cost is one extra download of the file to decode it.
 
+Playlists live in the browser only — in `localStorage`, nothing is sent to the server —
+so they are per browser and not shared with anyone else using the instance. "New playlist"
+in the navigation under the header creates one and "Playlists" lists them. The small `+`
+next to a track (or "Add to playlist" on the track page) opens a modal to tick any number
+of playlists for it, or to create a new one on the spot; the track page also lists the
+playlists a track is on. In a playlist, drag the rows by their handles (or focus a handle
+and use the arrow keys) to set the order, which is remembered too. Previous, play/pause
+and next buttons above the list play through it, and the auto-play switch, off by
+default, plays the tracks one after another on its own. Deleting a playlist asks first.
+
 The interface is available in English and Polish (`EN` / `PL` in the header). The choice
 is remembered in `localStorage`; without one, the browser's language decides. Server-side
 messages are English, but the interface translates the common API errors by status code.

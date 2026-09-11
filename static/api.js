@@ -12,7 +12,12 @@ export const ICONS = {
     '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.25 1.5h1.5v6.19l2.22-2.22 1.06 1.06L8 11.56 3.97 6.53l1.06-1.06 2.22 2.22V1.5zM2.5 12h11v1.5h-11z"/></svg>',
   back: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.47 2.47l1.06 1.06L4.81 7.25H13.5v1.5H4.81l3.72 3.72-1.06 1.06L1.94 8l5.53-5.53z"/></svg>',
   plus: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.25 2.5h1.5v4.75H13.5v1.5H8.75V13.5h-1.5V8.75H2.5v-1.5h4.75V2.5z"/></svg>',
+  prev: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h1.5v10H3zM13 3v10L5.5 8 13 3z"/></svg>',
+  next: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.5 3H13v10h-1.5zM3 3v10l7.5-5L3 3z"/></svg>',
   minus: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 7.25h11v1.5h-11z"/></svg>',
+  close:
+    '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.47 4.53l1.06-1.06L8 6.94l3.47-3.47 1.06 1.06L9.06 8l3.47 3.47-1.06 1.06L8 9.06l-3.47 3.47-1.06-1.06L6.94 8 3.47 4.53z"/></svg>',
+  grip: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2.5h2v2H5zM9 2.5h2v2H9zM5 7h2v2H5zM9 7h2v2H9zM5 11.5h2v2H5zM9 11.5h2v2H9z"/></svg>',
   sun: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 4.6A3.4 3.4 0 1 0 8 11.4 3.4 3.4 0 0 0 8 4.6zM7.25 0h1.5v2.6h-1.5zM7.25 13.4h1.5V16h-1.5zM0 7.25h2.6v1.5H0zM13.4 7.25H16v1.5h-2.6zM2.05 3.11l1.06-1.06 1.84 1.84-1.06 1.06zM11.05 12.11l1.06-1.06 1.84 1.84-1.06 1.06zM13.95 3.11l-1.06-1.06-1.84 1.84 1.06 1.06zM4.95 12.11l-1.06-1.06-1.84 1.84 1.06 1.06z"/></svg>',
   moon: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7.4 1.5a6.5 6.5 0 1 0 7.1 7.1A5.2 5.2 0 0 1 7.4 1.5z"/></svg>',
 };

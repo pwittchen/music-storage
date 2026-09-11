@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Track — plainsong</title>
+    <title>Playlists — plainsong</title>
     <link rel="stylesheet" href="/style.css" />
     <link rel="icon" href="data:," />
     <script>
@@ -21,7 +21,6 @@
       <header>
         <div class="brand">plain<span>song</span></div>
         <div class="header-right">
-          <a href="/" data-i18n="backToAll"></a>
           <button type="button" class="theme" id="theme"></button>
           <div class="lang" id="lang" role="group" aria-label="Language / Język">
             <button type="button" data-lang="en">EN</button>
@@ -31,16 +30,27 @@
       </header>
 
       <nav class="nav" data-i18n-label="navLabel">
-        <a href="/" aria-current="page" data-i18n="navTracks"></a>
-        <a href="/playlists.html" data-i18n="navPlaylists"></a>
+        <a href="/" data-i18n="navTracks"></a>
+        <a href="/playlists.html" aria-current="page" data-i18n="navPlaylists"></a>
         <button type="button" class="icon" id="new-playlist"></button>
       </nav>
 
       <p class="notice" id="notice" hidden role="status"></p>
 
-      <div class="detail" id="detail"></div>
+      <div id="playlists"></div>
     </div>
 
-    <script type="module" src="/track.js"></script>
+    <div class="player-bar" id="player-bar" hidden>
+      <div class="wrap player-bar-inner">
+        <span class="player-bar-title" id="player-bar-title"></span>
+        <div class="player-bar-track">
+          <div class="player-bar-fill" id="player-bar-fill"></div>
+        </div>
+        <span class="player-bar-time" id="player-bar-time"></span>
+      </div>
+    </div>
+
+    <audio id="player" preload="none"></audio>
+    <script type="module" src="/playlists.js"></script>
   </body>
 </html>
